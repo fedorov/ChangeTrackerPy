@@ -3,14 +3,14 @@ from __main__ import qt, ctk
 from ChangeTrackerStep import *
 from Helper import *
 
-class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
+class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
   def __init__( self, stepid ):
     self.initialize( stepid )
-    self.setName( '1. Select input scans' )
-    self.setDescription( 'Select the baseline and follow-up scans to be compared.' )
+    self.setName( '4. ROI Analysis' )
+    self.setDescription( 'Select the analysis method for the selected ROI.' )
 
-    self.__parent = super( ChangeTrackerSelectScansStep, self )
+    self.__parent = super( ChangeTrackerAnalyzeROIStep, self )
 
   def createUserInterface( self ):
     '''
@@ -18,26 +18,20 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
 #    self.buttonBoxHints = self.ButtonBoxHidden
 
     self.__layout = self.__parent.createUserInterface()
-   
-    baselineScanLabel = qt.QLabel( 'Select baseline scan:' )
-    self.__baselineVolumeSelector = slicer.qMRMLNodeComboBox()
-#    self.__baselineVolumeSelector.setNodeTypes('vtkMRMLScalarVolumeNode')
-    self.__baselineVolumeSelector.toolTip = "Choose the baseline scan"
 
-    followupScanLabel = qt.QLabel( 'Select followup scan:' )
-    self.__followupVolumeSelector = slicer.qMRMLNodeComboBox()
-#    self.__followupVolumeSelector.setNodeTypes('vtkMRMLScalarVolumeNode')
-    self.__followupVolumeSelector.toolTip = "Choose the followup scan"
-   
-    self.__layout.addRow( baselineScanLabel, self.__baselineVolumeSelector )
-    self.__layout.addRow( followupScanLabel, self.__followupVolumeSelector )
+    # add radio box group
+    roiLabel = qt.QLabel( 'Select segmentation:' )
+    self.__roiSelector = slicer.qMRMLNodeComboBox()
+#    self.__roiSelector.setNodeTyes('vtkMRMLROIAnnotationNode')
+    self.__roiSelector.toolTip = "Choose the ROI segmentation"
+
+    self.__layout.addRow( roiLabel, self.__roiSelector )
 
   def validate( self, desiredBranchId ):
     '''
     '''
     self.__parent.validate( desiredBranchId )
-    # check here that the selectors are not empty
-
+    # check here that ROI is not empty and is within the baseline volume
     self.__parent.validationSucceeded(desiredBranchId)
 
 """

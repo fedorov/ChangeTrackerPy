@@ -1,10 +1,8 @@
 from __main__ import vtk, qt, ctk, slicer
 
-# import EMSegmentWizard
-# from EMSegmentWizard import Helper
-import ChangeTrackerPyWizard
+import ChangeTrackerWizard
 
-class ChangeTrackerPy:
+class ChangeTracker:
   def __init__( self, parent ):
     parent.title = "ChangeTracker"
     parent.category = ""
@@ -13,7 +11,7 @@ class ChangeTrackerPy:
     parent.acknowledgementText = """Ack text"""
     self.parent = parent
 
-class ChangeTrackerPyWidget:
+class ChangeTrackerWidget:
   def __init__( self, parent=None ):
     if not parent:
       self.parent = slicer.qMRMLWidget()
@@ -73,58 +71,28 @@ class ChangeTrackerPyWidget:
     workflowWidget.buttonBoxWidget().backButtonDefaultText = ""
     
     # create all wizard steps
-    selectScansStep = ChangeTrackerPyWizard.ChangeTrackerSelectScansStep( 'SelectScans'  )
-
-    selectROIStep = ChangeTrackerPyWizard.ChangeTrackerSelectScansStep( 'SelectROI'  )
-
-    '''
-    defineInputChannelsSimpleStep = ChangeTrackerWizard.ChangeTrackerDefineInputChannelsStep( Helper.GetNthStepId( 2 ) + 'Simple' ) # simple branch
-    defineInputChannelsAdvancedStep = ChangeTrackerWizard.ChangeTrackerDefineInputChannelsStep( Helper.GetNthStepId( 2 ) + 'Advanced' ) # advanced branch
-    defineAnatomicalTreeStep = ChangeTrackerWizard.ChangeTrackerDefineAnatomicalTreeStep( Helper.GetNthStepId( 3 ) )
-    defineAtlasStep = ChangeTrackerWizard.ChangeTrackerDefineAtlasStep( Helper.GetNthStepId( 4 ) )
-    editRegistrationParametersStep = ChangeTrackerWizard.ChangeTrackerEditRegistrationParametersStep( Helper.GetNthStepId( 5 ) )
-    definePreprocessingStep = ChangeTrackerWizard.ChangeTrackerDefinePreprocessingStep( Helper.GetNthStepId( 6 ) )
-    specifyIntensityDistributionStep = ChangeTrackerWizard.ChangeTrackerSpecifyIntensityDistributionStep( Helper.GetNthStepId( 7 ) )
-    editNodeBasedParametersStep = ChangeTrackerWizard.ChangeTrackerEditNodeBasedParametersStep( Helper.GetNthStepId( 8 ) )
-    miscStep = ChangeTrackerWizard.ChangeTrackerDefineMiscParametersStep( Helper.GetNthStepId( 9 ) )
-    segmentStep = ChangeTrackerWizard.ChangeTrackerDummyStep( Helper.GetNthStepId( 10 ) )
-
-    '''
+    selectScansStep = ChangeTrackerWizard.ChangeTrackerSelectScansStep( 'SelectScans'  )
+    defineROIStep = ChangeTrackerWizard.ChangeTrackerDefineROIStep( 'DefineROI'  )
+    segmentROIStep = ChangeTrackerWizard.ChangeTrackerSegmentROIStep( 'SegmentROI'  )
+    analyzeROIStep = ChangeTrackerWizard.ChangeTrackerAnalyzeROIStep( 'AnalyzeROI'  )
+    reportROIStep = ChangeTrackerWizard.ChangeTrackerReportROIStep( 'ReportROI'  )
 
     # add the wizard steps to an array for convenience
     allSteps = []
 
     allSteps.append( selectScansStep )
-    allSteps.append( selectROIStep )
-    '''
-    allSteps.append( defineInputChannelsSimpleStep )
-    allSteps.append( defineInputChannelsAdvancedStep )
-    allSteps.append( defineAnatomicalTreeStep )
-    allSteps.append( defineAtlasStep )
-    allSteps.append( editRegistrationParametersStep )
-    allSteps.append( definePreprocessingStep )
-    allSteps.append( specifyIntensityDistributionStep )
-    allSteps.append( editNodeBasedParametersStep )
-    allSteps.append( miscStep )
-    allSteps.append( segmentStep )
-    '''
+    allSteps.append( defineROIStep )
+    allSteps.append( segmentROIStep )
+    allSteps.append( analyzeROIStep )
+    allSteps.append( reportROIStep )
 
     # Add transition for the first step which let's the user choose between simple and advanced mode
-    self.workflow.addTransition( selectScansStep, selectROIStep )
-
+    self.workflow.addTransition( selectScansStep, defineROIStep )
+    self.workflow.addTransition( defineROIStep, segmentROIStep )
+    self.workflow.addTransition( segmentROIStep, analyzeROIStep )
+    self.workflow.addTransition( analyzeROIStep, reportROIStep )
+    
     '''
-    self.workflow.addTransition( selectTaskStep, defineInputChannelsAdvancedStep, 'AdvancedMode' )
-
-    # Add transitions associated to the simple mode
-    self.workflow.addTransition( defineInputChannelsSimpleStep, segmentStep )
-
-    # Add transitions associated to the advanced mode
-    self.workflow.addTransition( defineInputChannelsAdvancedStep, defineAnatomicalTreeStep )
-
-    # .. add transitions for the rest of the advanced mode steps
-    for i in range( 3, len( allSteps ) - 1 ):
-      self.workflow.addTransition( allSteps[i], allSteps[i + 1] )
-
     # Propagate the workflow, the logic and the MRML Manager to the steps
     for s in allSteps:
         s.setWorkflow( self.workflow )
