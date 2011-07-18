@@ -49,6 +49,9 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
       baselineID = baseline.GetID()
       followupID = followup.GetID()
       if baselineID != '' and followupID != '' and baselineID != followupID:
+        lm = slicer.app.layoutManager()
+        lm.setLayout(3)
+        # TODO: initialize Bg/Fg, fit volumes to slice viewer
         self.__parent.validationSucceeded(desiredBranchId)
       else:
         self.__parent.validationFailed(desiredBranchId, 'Error','Please select distinctive baseline and followup volumes!')
