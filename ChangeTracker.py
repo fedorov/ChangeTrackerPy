@@ -36,6 +36,12 @@ class ChangeTrackerWidget:
 
       self.parent.show()
 
+    if slicer.mrmlScene.GetTagByClassName( "vtkMRMLScriptedModuleNode" ) != 'ScriptedModule':
+      slicer.mrmlScene.RegisterNodeClass(vtkMRMLScriptedModuleNode())
+
+    # register ChangeTracker parameter node class
+    # p = vtkMRMLChangeTrackerParameterNode.New()
+
     # register default slots
     #self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)', self.onMRMLSceneChanged)      
 
@@ -91,11 +97,26 @@ class ChangeTrackerWidget:
     self.workflow.addTransition( defineROIStep, segmentROIStep )
     self.workflow.addTransition( segmentROIStep, analyzeROIStep )
     self.workflow.addTransition( analyzeROIStep, reportROIStep )
-    
-    '''
+
+    nNodes = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLScriptedModuleNode')
+
+    self.parameterNode = None
+    for n in xrange(nNodes):
+      compNode = slicer.mrmlScene.GetNthNodeByClass(n, 'vtkMRMLScriptedModuleNode')
+      nodeid = None
+      if compNode.GetModuleName() == 'ChangeTracker':
+        self.parameterNode = compNode
+        print 'Found existing ChangeTracker parameter node'
+        break
+    if self.parameterNode == None:
+      self.parameterNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLScriptedModuleNode')
+      self.parameterNode.SetModuleName('ChangeTracker')
+ 
     # Propagate the workflow, the logic and the MRML Manager to the steps
     for s in allSteps:
         s.setWorkflow( self.workflow )
+        s.setParameterNode (self.parameterNode)
+    '''
         s.setLogic( self.logic() )
         s.setMRMLManager( self.mrmlManager() )
     '''

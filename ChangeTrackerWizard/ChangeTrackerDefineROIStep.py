@@ -1,4 +1,4 @@
-from __main__ import qt, ctk
+from __main__ import qt, ctk, slicer
 
 from ChangeTrackerStep import *
 from Helper import *
@@ -26,7 +26,32 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     self.__layout.addRow( roiLabel, self.__roiSelector )
 
+    self.__roiSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onROIChanged)
 
+    # initialize VR stuff
+    self.__vrLogic = slicer.modules.volumerendering.logic()
+    self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
+    viewNode = slicer.util.getNode('ViewNode')
+    self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
+    # FIXME: pass the node information in a MRML node
+    v = slicer.mrmlScene.GetNodeByID('vtkMRMLScalarVolumeNode1')
+    self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, v)
+    self.__vrDisplayNode.VisibilityOff()
+
+  def onROIChanged(self):
+    roi = self.__roiSelector.currentNode()
+    # TODO: update ROI in the MRML node, remove observer, add new observer
+    # observe modifications of the ROI, change view origin as the ROI is
+    # changing
+    # In that same handler, call some logic function to recalculate ROI
+    # min/max, and update the transfer function accordingly
+    if roi != None:
+      v = slicer.mrmlScene.GetNodeByID('vtkMRMLScalarVolumeNode1')
+      self.__vrDisplayNode.SetAndObserveROINodeID(roi.GetID())
+      self.__vrDisplayNode.SetAndObserveVolumeNodeID(v.GetID())
+      self.__vrDisplayNode.SetCroppingEnabled(1)
+      self.__vrDisplayNode.VisibilityOn()
+     
   def validate( self, desiredBranchId ):
     '''
     '''
@@ -36,6 +61,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # NoneType?
     if roi != 'NoneType' and roi != 'None':
       print 'ROI: ',roi
+      pNode = self.parameterNode()
+      pNode.SetParameter('roiID',roi.GetID())
       # print 'ROI ID: ', roi.GetID()
       # TODO: verify that ROI is within the baseline volume?
       self.__parent.validationSucceeded(desiredBranchId)

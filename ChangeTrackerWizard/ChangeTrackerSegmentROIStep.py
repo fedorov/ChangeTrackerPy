@@ -33,138 +33,28 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     # check here that ROI is not empty and is within the baseline volume
     self.__parent.validationSucceeded(desiredBranchId)
 
-"""
-    # fill the comboBox with the taskNames
-    self.__taskComboBox.addItems( self.getTaskNames() )
-    self.__layout.addRow( Helper.CreateSpace( 20 ), self.__taskComboBox )
-
-    # add empty row
-    self.__layout.addRow( "", qt.QWidget() )
-
-
-    chooseModeLabel = qt.QLabel( 'Choose Mode' )
-    chooseModeLabel.setFont( self.__parent.getBoldFont() )
-    self.__layout.addRow( chooseModeLabel )
-
-    buttonBox = qt.QDialogButtonBox()
-    simpleButton = buttonBox.addButton( buttonBox.Discard )
-    simpleButton.setIcon( qt.QIcon() )
-    simpleButton.text = "Simple"
-    simpleButton.toolTip = "Click to use the simple mode."
-    advancedButton = buttonBox.addButton( buttonBox.Apply )
-    advancedButton.setIcon( qt.QIcon() )
-    advancedButton.text = "Advanced"
-    advancedButton.toolTip = "Click to use the advanced mode."
-    self.__layout.addWidget( buttonBox )
-
-    # connect the simple and advanced buttons
-    simpleButton.connect( 'clicked()', self.goSimple )
-    advancedButton.connect( 'clicked()', self.goAdvanced )
-
-
-  def loadTasks( self ):
+  def onEntry(self, comingFrom, transitionType):
     '''
-    Load all available Tasks and save them to self.__tasksList as key,value pairs of taskName and fileName
+    Resample the baseline volume using ROI
     '''
-    if not self.logic():
-      Helper.Error( "No logic class!" )
-      return False
+    pNode = self.parameterNode()
+    baselineVolumeID = pNode.GetParameter('baselineVolumeID')
+    baselineVolume = slicer.mrmlScene.GetNodeByID(baselineVolumeID)
 
-    # we query the logic for a comma-separated string with the following format of each item:
-    # tasksName:tasksFile
-    tasksList = self.logic().GetTasks().split( ',' )
+    outputVolume = slicer.modules.volumes.logic().CloneVolume(slicer.mrmlScene, baselineVolume, 'baselineROI')
+    cropVolumeNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCropVolumeParametersNode')
+    cropVolumeNode.SetScene(slicer.mrmlScene)
+    cropVolumeNode.SetName('ChangeTracker_CropVolume_node')
+    slicer.mrmlScene.AddNode(cropVolumeNode)
 
-    self.__tasksList.clear()
+    cropVolumeNode.SetAndObserveInputVolumeNodeID(pNode.GetParameter('baselineVolumeID'))
+    cropVolumeNode.SetAndObserveROINodeID(pNode.GetParameter('roiID'))
+    # cropVolumeNode.SetAndObserveOutputVolumeNodeID(outputVolume.GetID())
 
-    for t in tasksList:
-      task = t.split( ':' )
-      taskName = task[0]
-      taskFile = task[1]
+    cropVolumeLogic = slicer.modules.cropvolume.logic()
+    cropVolumeLogic.Apply(cropVolumeNode)
 
-      # add this entry to out tasksList
-      self.__tasksList[taskName] = taskFile
+    # TODO: initialize volume selectors, fit ROI to slice viewers, create
+    # label volume, initialize the threshold, initialize volume rendering ?
 
-    return True
-
-  def loadTask( self ):
-    '''
-    '''
-    index = self.__taskComboBox.currentIndex
-
-    taskName = self.__taskComboBox.currentText
-    taskFile = self.__tasksList[taskName]
-
-    if not taskName or not taskFile:
-      # error!
-      Helper.Error( "Either taskName or taskFile was empty!" )
-      return False
-
-    # now get any loaded EMSTemplateNode which could fit our name
-    templateNodesPreLoad = slicer.mrmlScene.GetNodesByClassByName( 'vtkMRMLEMSTemplateNode', taskName )
-    if templateNodesPreLoad.GetNumberOfItems() > 0:
-      # this is strange behavior but we can continue in this case!
-      Helper.Warning( "We already have the template node in the scene and do not load it again!" )
-
-    else:
-
-      # there was no relevant template node in the scene, so let's import the mrml file
-      # this is the normal behavior!      
-      Helper.Debug( "Attempting to load task '" + taskName + "' from file '" + taskFile + "'" )
-
-      # only load if no relevant node exists
-      self.mrmlManager().ImportMRMLFile( taskFile )
-
-
-    # now get the loaded EMSTemplateNode
-    templateNodes = slicer.mrmlScene.GetNodesByClassByName( 'vtkMRMLEMSTemplateNode', taskName )
-
-    if not templateNodes:
-      # error!
-      Helper.Error( "Could not find any template node after trying to load them!" )
-      return False
-
-    # we load the last template node which fits the taskname
-    templateNode = templateNodes.GetItemAsObject( templateNodes.GetNumberOfItems() - 1 )
-
-    loadResult = self.mrmlManager().SetLoadedParameterSetIndex( templateNode )
-    if not loadResult:
-      Helper.Info( "EMS node is corrupted - the manager could not be updated with new task: " + taskName )
-      #return False
-
-    self.logic().DefineTclTaskFullPathName( self.mrmlManager().GetTclTaskFilename() )
-
-    return True
-
-
-  def getTaskNames( self ):
-    '''
-    Get the taskNames of our tasksList
-    '''
-    return self.__tasksList.keys()
-
-  def goSimple( self ):
-    '''
-    '''
-
-    workflow = self.workflow()
-    if not workflow:
-      Helper.Error( "No valid workflow found!" )
-      return False
-
-    # we go forward in the simpleMode branch
-    workflow.goForward( 'SimpleMode' )
-
-
-  def goAdvanced( self ):
-    '''
-    '''
-
-    workflow = self.workflow()
-    if not workflow:
-      Helper.Error( "No valid workflow found!" )
-      return False
-
-    # we go forward in the advancedMode branch
-    workflow.goForward( 'AdvancedMode' )
-"""
-
+    super(ChangeTrackerSegmentROIStep, self).onEntry(comingFrom, transitionType)

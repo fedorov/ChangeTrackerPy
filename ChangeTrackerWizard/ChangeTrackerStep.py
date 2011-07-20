@@ -14,6 +14,12 @@ class ChangeTrackerStep( ctk.ctkWorkflowWidgetStep ) :
     '''
     self.__workflow = workflow
 
+  def setParameterNode(self, parameterNode):
+    '''
+    Keep the pointer to the parameter node for each step
+    '''
+    self.__parameterNode = parameterNode
+
   '''
   def setMRMLManager( self, mrmlManager ):
     self.__mrmlManager = mrmlManager
@@ -30,6 +36,9 @@ class ChangeTrackerStep( ctk.ctkWorkflowWidgetStep ) :
 
   def workflow( self ):
     return self.__workflow
+
+  def parameterNode(self):
+    return self.__parameterNode
 
   def getBoldFont( self ):
     '''
