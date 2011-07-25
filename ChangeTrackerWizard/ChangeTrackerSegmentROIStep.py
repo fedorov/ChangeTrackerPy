@@ -19,11 +19,16 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
     self.__layout = self.__parent.createUserInterface()
 
+    threshLabel = qt.QLabel('Choose threshold:')
+    self.__threshSlider = ctk.ctkSliderWidget()
+
     roiLabel = qt.QLabel( 'Select segmentation:' )
     self.__roiSelector = slicer.qMRMLNodeComboBox()
-#    self.__roiSelector.setNodeTyes('vtkMRMLROIAnnotationNode')
+    self.__roiSelector.nodeTypes = ( 'vtkMRMLScalarVolumeNode', '' )
+    self.__roiSelector.addAttribute('vtkMRMLScalarVolumeNode','LabelMap','1')
     self.__roiSelector.toolTip = "Choose the ROI segmentation"
 
+    self.__layout.addRow(threshLabel, self.__threshSlider)
     self.__layout.addRow( roiLabel, self.__roiSelector )
 
   def validate( self, desiredBranchId ):
@@ -54,7 +59,12 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     cropVolumeLogic = slicer.modules.cropvolume.logic()
     cropVolumeLogic.Apply(cropVolumeNode)
 
+    # TODO: cropvolume error checking
+    pNode.SetParameter('croppedBaselineVolumeID',cropVolumeNode.GetOutputVolumeNodeID())
+
+    Helper.SetBgFgVolumes(pNode.GetParameter('croppedBaselineVolumeID'),'')
+    super(ChangeTrackerSegmentROIStep, self).onEntry(comingFrom, transitionType)
+
     # TODO: initialize volume selectors, fit ROI to slice viewers, create
     # label volume, initialize the threshold, initialize volume rendering ?
 
-    super(ChangeTrackerSegmentROIStep, self).onEntry(comingFrom, transitionType)
