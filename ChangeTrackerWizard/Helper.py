@@ -77,3 +77,12 @@ class Helper( object ):
       n = 0
 
     return steps[n]
+
+  @staticmethod
+  def SetBgFgVolumes(bg, fg):
+    appLogic = slicer.app.mrmlApplicationLogic()
+    selectionNode = appLogic.GetSelectionNode()
+    selectionNode.SetReferenceActiveVolumeID(bg)
+    selectionNode.SetReferenceSecondaryVolumeID(fg)
+    appLogic.PropagateVolumeSelection()
+    

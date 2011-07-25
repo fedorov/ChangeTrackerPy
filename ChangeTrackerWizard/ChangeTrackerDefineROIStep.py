@@ -12,6 +12,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     self.__parent = super( ChangeTrackerDefineROIStep, self )
 
+    self.__vrDisplayNode = 'None'
+
   def createUserInterface( self ):
     '''
     '''
@@ -28,16 +30,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     self.__roiSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onROIChanged)
 
-    # initialize VR stuff
-    self.__vrLogic = slicer.modules.volumerendering.logic()
-    self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
-    viewNode = slicer.util.getNode('ViewNode')
-    self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
-    # FIXME: pass the node information in a MRML node
-    v = slicer.mrmlScene.GetNodeByID('vtkMRMLScalarVolumeNode1')
-    self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, v)
-    self.__vrDisplayNode.VisibilityOff()
-
   def onROIChanged(self):
     roi = self.__roiSelector.currentNode()
     # TODO: update ROI in the MRML node, remove observer, add new observer
@@ -46,7 +38,20 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # In that same handler, call some logic function to recalculate ROI
     # min/max, and update the transfer function accordingly
     if roi != None:
-      v = slicer.mrmlScene.GetNodeByID('vtkMRMLScalarVolumeNode1')
+    
+      pNode = self.parameterNode()
+      # initialize VR stuff
+      self.__vrLogic = slicer.modules.volumerendering.logic()
+      if self.__vrDisplayNode == 'None':
+        print 'DEBUG: ChangeTracker DefineROI step: Creating VR node!'
+        self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
+        viewNode = slicer.util.getNode('ViewNode')
+        self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
+
+        v = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
+        self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, v)
+
+      v = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
       self.__vrDisplayNode.SetAndObserveROINodeID(roi.GetID())
       self.__vrDisplayNode.SetAndObserveVolumeNodeID(v.GetID())
       self.__vrDisplayNode.SetCroppingEnabled(1)
@@ -57,9 +62,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     '''
     self.__parent.validate( desiredBranchId )
     roi = self.__roiSelector.currentNode()
-    # FIXME: is this a bug that node selector may return either None or
-    # NoneType?
-    if roi != 'NoneType' and roi != 'None':
+    if roi != 'None':
       print 'ROI: ',roi
       pNode = self.parameterNode()
       pNode.SetParameter('roiID',roi.GetID())
@@ -68,3 +71,13 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       self.__parent.validationSucceeded(desiredBranchId)
     else:
       self.__parent.validationFailed(desiredBranchId, 'Error', 'Please define ROI!')
+
+  def onEntry(self,comingFrom,transitionType):
+    pNode = self.parameterNode()
+    Helper.SetBgFgVolumes(pNode.GetParameter('baselineVolumeID'),pNode.GetParameter('followupVolumeID'))
+
+    super(ChangeTrackerDefineROIStep, self).onEntry(comingFrom, transitionType)
+
+  def onExit(self, goingTo, transitionType):
+    self.__vrDisplayNode.VisibilityOff()
+    super(ChangeTrackerDefineROIStep, self).onExit(goingTo, transitionType)
