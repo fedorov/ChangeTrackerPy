@@ -3,6 +3,9 @@ from __main__ import qt, ctk, slicer
 from ChangeTrackerStep import *
 from Helper import *
 
+# TODO: grab the IJKtoRAS transform from the baseline image, and set it as the
+# parent transform for the ROI, so that it is aligned with the voxel grid ?
+
 class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
   def __init__( self, stepid ):
@@ -12,7 +15,10 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     self.__parent = super( ChangeTrackerDefineROIStep, self )
 
-    self.__vrDisplayNode = 'None'
+    self.__vrDisplayNode = None
+
+    self.__roiTransformNode = None
+    self.__baselineVolume = None
 
   def createUserInterface( self ):
     '''
@@ -30,6 +36,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     self.__roiSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onROIChanged)
 
+    self.__roi = None
+
   def onROIChanged(self):
     roi = self.__roiSelector.currentNode()
     # TODO: update ROI in the MRML node, remove observer, add new observer
@@ -37,32 +45,130 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # changing
     # In that same handler, call some logic function to recalculate ROI
     # min/max, and update the transfer function accordingly
+
+    '''
+    m = vtk.vtkMatrix4x4()
+    n = slicer.mrmlScene.GetNodeByID('vtkMRMLScalarVolumeNode4')
+    n.GetIJKToRASMatrix(m)
+    n = slicer.mrmlScene.GetNodeByID('vtkMRMLScalarVolumeNode4')
+    n.GetIJKToRASMatrix(m)
+    n.GetIJKToRASDirectionMatrix(m)
+    m.SetElement(0,3,0)
+    t.SetAndObserveMatrixTransformToParent(m)
+    r = slicer.mrmlScene.GetNodeByID('vtkMRMLAnnotationROINode1')
+    r.SetAndObserveTransformNodeID(t.GetIDGetID())
+    '''
+
     if roi != None:
     
       pNode = self.parameterNode()
       # initialize VR stuff
       self.__vrLogic = slicer.modules.volumerendering.logic()
-      if self.__vrDisplayNode == 'None':
+      # create VR node first time a valid ROI is selected
+      if self.__vrDisplayNode == None:
+        print 'VR node is ', self.__vrDisplayNode
         print 'DEBUG: ChangeTracker DefineROI step: Creating VR node!'
         self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
         viewNode = slicer.util.getNode('ViewNode')
         self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
 
         v = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
+        self.__vrDisplayNode.SetAndObserveVolumeNodeID(v.GetID())
         self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, v)
+        self.__vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
+        self.__vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
 
+        # setup color transfer function once
+        self.__vrColorMap.RemoveAllPoints()
+        self.__vrColorMap.AddRGBPoint(0, 0.8, 0.8, 0)
+        self.__vrColorMap.AddRGBPoint(500, 0.8, 0.8, 0)
+
+
+      # update VR settings each time ROI changes
       v = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
       self.__vrDisplayNode.SetAndObserveROINodeID(roi.GetID())
-      self.__vrDisplayNode.SetAndObserveVolumeNodeID(v.GetID())
       self.__vrDisplayNode.SetCroppingEnabled(1)
       self.__vrDisplayNode.VisibilityOn()
+
+      roi.SetAndObserveTransformNodeID(self.__roiTransformNode.GetID())
+
+      # TODO: update opacity function based on ROI content
+      # self.__vrOpacityMap.RemoveAllPoints()
+
+      self.__roi = slicer.mrmlScene.GetNodeByID(roi.GetID())
+      self.__roi.AddObserver('ModifiedEvent', self.processROIEvents)
      
+  def processROIEvents(self,node,event):
+    # get the range of intensities inside the ROI
+
+    # get the IJK bounding box of the voxels inside ROI
+    roiCenter = [0,0,0]
+    roiRadius = [0,0,0]
+    self.__roi.GetXYZ(roiCenter)
+    self.__roi.GetRadiusXYZ(roiRadius)
+
+    roiCorner1 = [roiCenter[0]+roiRadius[0],roiCenter[1]+roiRadius[1],roiCenter[2]+roiRadius[2],1]
+    roiCorner2 = [roiCenter[0]+roiRadius[0],roiCenter[1]+roiRadius[1],roiCenter[2]-roiRadius[2],1]
+    roiCorner3 = [roiCenter[0]+roiRadius[0],roiCenter[1]-roiRadius[1],roiCenter[2]+roiRadius[2],1]
+    roiCorner4 = [roiCenter[0]+roiRadius[0],roiCenter[1]-roiRadius[1],roiCenter[2]-roiRadius[2],1]
+    roiCorner5 = [roiCenter[0]-roiRadius[0],roiCenter[1]+roiRadius[1],roiCenter[2]+roiRadius[2],1]
+    roiCorner6 = [roiCenter[0]-roiRadius[0],roiCenter[1]+roiRadius[1],roiCenter[2]-roiRadius[2],1]
+    roiCorner7 = [roiCenter[0]-roiRadius[0],roiCenter[1]-roiRadius[1],roiCenter[2]+roiRadius[2],1]
+    roiCorner8 = [roiCenter[0]-roiRadius[0],roiCenter[1]-roiRadius[1],roiCenter[2]-roiRadius[2],1]
+
+    ras2ijk = vtk.vtkMatrix4x4()
+    self.__baselineVolume.GetRASToIJKMatrix(ras2ijk)
+
+    roiCorner1ijk = ras2ijk.MultiplyPoint(roiCorner1)
+    roiCorner2ijk = ras2ijk.MultiplyPoint(roiCorner2)
+    roiCorner3ijk = ras2ijk.MultiplyPoint(roiCorner3)
+    roiCorner4ijk = ras2ijk.MultiplyPoint(roiCorner4)
+    roiCorner5ijk = ras2ijk.MultiplyPoint(roiCorner5)
+    roiCorner6ijk = ras2ijk.MultiplyPoint(roiCorner6)
+    roiCorner7ijk = ras2ijk.MultiplyPoint(roiCorner7)
+    roiCorner8ijk = ras2ijk.MultiplyPoint(roiCorner8)
+
+    lowerIJK = [0, 0, 0]
+    upperIJK = [0, 0, 0]
+
+    lowerIJK[0] = min(roiCorner1ijk[0],roiCorner2ijk[0],roiCorner3ijk[0],roiCorner4ijk[0],roiCorner5ijk[0],roiCorner6ijk[0],roiCorner7ijk[0],roiCorner8ijk[0])
+    lowerIJK[1] = min(roiCorner1ijk[1],roiCorner2ijk[1],roiCorner3ijk[1],roiCorner4ijk[1],roiCorner5ijk[1],roiCorner6ijk[1],roiCorner7ijk[1],roiCorner8ijk[1])
+    lowerIJK[2] = min(roiCorner1ijk[2],roiCorner2ijk[2],roiCorner3ijk[2],roiCorner4ijk[2],roiCorner5ijk[2],roiCorner6ijk[2],roiCorner7ijk[2],roiCorner8ijk[2])
+
+    upperIJK[0] = max(roiCorner1ijk[0],roiCorner2ijk[0],roiCorner3ijk[0],roiCorner4ijk[0],roiCorner5ijk[0],roiCorner6ijk[0],roiCorner7ijk[0],roiCorner8ijk[0])
+    upperIJK[1] = max(roiCorner1ijk[1],roiCorner2ijk[1],roiCorner3ijk[1],roiCorner4ijk[1],roiCorner5ijk[1],roiCorner6ijk[1],roiCorner7ijk[1],roiCorner8ijk[1])
+    upperIJK[2] = max(roiCorner1ijk[2],roiCorner2ijk[2],roiCorner3ijk[2],roiCorner4ijk[2],roiCorner5ijk[2],roiCorner6ijk[2],roiCorner7ijk[2],roiCorner8ijk[2])
+
+    image = self.__baselineVolume.GetImageData()
+    clipper = vtk.vtkImageClip()
+    clipper.ClipDataOn()
+    clipper.SetOutputWholeExtent(lowerIJK[0],upperIJK[0],lowerIJK[1],upperIJK[1],lowerIJK[2],upperIJK[2])
+    clipper.SetInput(image)
+    clipper.Update()
+
+    roiImageRegion = clipper.GetOutput()
+    intRange = roiImageRegion.GetScalarRange()
+    lThresh = 0.4*(intRange[0]+intRange[1])
+    uThresh = intRange[1]
+
+    self.__vrOpacityMap.RemoveAllPoints()
+    self.__vrOpacityMap.AddPoint(0,0)
+    self.__vrOpacityMap.AddPoint(lThresh-1,0)
+    self.__vrOpacityMap.AddPoint(lThresh,1)
+    self.__vrOpacityMap.AddPoint(uThresh,1)
+    self.__vrOpacityMap.AddPoint(uThresh+1,0)
+
+    # finally, update the focal point to be the center of ROI
+    # Don't do this actually -- this breaks volume rendering
+    camera = slicer.mrmlScene.GetNodeByID('vtkMRMLCameraNode1')
+    camera.SetFocalPoint(roiCenter)
+
   def validate( self, desiredBranchId ):
     '''
     '''
     self.__parent.validate( desiredBranchId )
     roi = self.__roiSelector.currentNode()
-    if roi != 'None':
+    if roi != None:
       print 'ROI: ',roi
       pNode = self.parameterNode()
       pNode.SetParameter('roiID',roi.GetID())
@@ -75,6 +181,28 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
   def onEntry(self,comingFrom,transitionType):
     pNode = self.parameterNode()
     Helper.SetBgFgVolumes(pNode.GetParameter('baselineVolumeID'),pNode.GetParameter('followupVolumeID'))
+
+    # use this transform node to align ROI with the axes of the baseline
+    # volume
+    if self.__roiTransformNode == None:
+      print 'ROI transform node created'
+      self.__roiTransformNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLLinearTransformNode')
+      print 'node is ',self.__roiTransformNode
+      slicer.mrmlScene.AddNode(self.__roiTransformNode)
+    
+    baselineVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
+    self.__baselineVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
+
+
+    dm = vtk.vtkMatrix4x4()
+    baselineVolume.GetIJKToRASDirectionMatrix(dm)
+    dm.SetElement(0,3,0)
+    dm.SetElement(1,3,0)
+    dm.SetElement(2,3,0)
+    dm.SetElement(0,0,abs(dm.GetElement(0,0)))
+    dm.SetElement(1,1,abs(dm.GetElement(1,1)))
+    dm.SetElement(2,2,abs(dm.GetElement(2,2)))
+    self.__roiTransformNode.SetAndObserveMatrixTransformToParent(dm)
 
     super(ChangeTrackerDefineROIStep, self).onEntry(comingFrom, transitionType)
 

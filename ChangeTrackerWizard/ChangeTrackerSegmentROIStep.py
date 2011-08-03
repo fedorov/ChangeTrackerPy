@@ -65,6 +65,12 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     Helper.SetBgFgVolumes(pNode.GetParameter('croppedBaselineVolumeID'),'')
     super(ChangeTrackerSegmentROIStep, self).onEntry(comingFrom, transitionType)
 
+    # initilize threshold selector based on the ROI contents
+    roiVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
+    roiImage = roiVolume.GetImageData()
+    roiImageRange = roiImage.GetScalarRange()
+    self.__threshSlider.setMaxumum(roiImageRange[0])
+    self.__threshSlider.setMaxumum(roiImageRange[1])
     # TODO: initialize volume selectors, fit ROI to slice viewers, create
     # label volume, initialize the threshold, initialize volume rendering ?
-
+    
