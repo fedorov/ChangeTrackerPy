@@ -19,6 +19,9 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__vrLogic = slicer.modules.volumerendering.logic()
     self.__vrOpacityMap = None
 
+    self.__roiSegmentationNode = None
+    self.__roiVolume = None
+
   def createUserInterface( self ):
     '''
     '''
@@ -36,9 +39,12 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__roiLabelSelector.nodeTypes = ( 'vtkMRMLScalarVolumeNode', '' )
     self.__roiLabelSelector.addAttribute('vtkMRMLScalarVolumeNode','LabelMap','1')
     self.__roiLabelSelector.toolTip = "Choose the ROI segmentation"
+    self.__roiLabelSelector.nodeTypes = ['vtkMRMLScalarVolumeNode']
+    self.__roiLabelSelector.addEnabled = 0
+    self.__roiLabelSelector.setMRMLScene(slicer.mrmlScene)
 
     self.__layout.addRow(threshLabel, self.__threshSlider)
-    self.__layout.addRow( roiLabel, self.__roiLabelSelector )
+    # self.__layout.addRow( roiLabel, self.__roiLabelSelector )
 
     self.__threshSlider.connect('valueChanged(double)', self.onThresholdChanged)
 
@@ -55,14 +61,21 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__vrOpacityMap.AddPoint(self.__threshold[1],1)
     self.__vrOpacityMap.AddPoint(self.__threshold[1]+1,0)
 
+    # update the label volume accordingly
+    thresh = vtk.vtkImageThreshold()
+    thresh.SetInput(self.__roiVolume.GetImageData())
+    thresh.ThresholdBetween(self.__threshold[0], self.__threshold[1])
+    thresh.SetInValue(6)
+    thresh.SetOutValue(0)
+    thresh.ReplaceOutOn()
+    thresh.ReplaceInOn()
 
-
+    self.__roiSegmentationNode.SetAndObserveImageData(thresh.GetOutput())
 
   def validate( self, desiredBranchId ):
     '''
     '''
     self.__parent.validate( desiredBranchId )
-    # check here that ROI is not empty and is within the baseline volume
     self.__parent.validationSucceeded(desiredBranchId)
 
   def onEntry(self, comingFrom, transitionType):
@@ -134,4 +147,11 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__vrOpacityMap.AddPoint(self.__threshold[1],1)
     self.__vrOpacityMap.AddPoint(self.__threshold[1]+1,0)
 
-    
+    # create a label volume from the ROI
+    if self.__roiSegmentationNode == None:
+      vl = slicer.modules.volumes.logic()
+      self.__roiSegmentationNode = vl.CreateLabelVolume(slicer.mrmlScene, roiVolume, 'ROI_Segmentation')
+   
+    Helper.SetLabelVolume(self.__roiSegmentationNode.GetID())
+
+    self.__roiVolume = roiVolume

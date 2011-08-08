@@ -85,4 +85,10 @@ class Helper( object ):
     selectionNode.SetReferenceActiveVolumeID(bg)
     selectionNode.SetReferenceSecondaryVolumeID(fg)
     appLogic.PropagateVolumeSelection()
-    
+
+  @staticmethod
+  def SetLabelVolume(lb):
+    appLogic = slicer.app.mrmlApplicationLogic()
+    selectionNode = appLogic.GetSelectionNode()
+    selectionNode.SetReferenceActiveLabelVolumeID(lb)
+    appLogic.PropagateVolumeSelection()
