@@ -3,9 +3,6 @@ from __main__ import qt, ctk, slicer
 from ChangeTrackerStep import *
 from Helper import *
 
-# TODO: grab the IJKtoRAS transform from the baseline image, and set it as the
-# parent transform for the ROI, so that it is aligned with the voxel grid ?
-
 class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
   def __init__( self, stepid ):
@@ -19,6 +16,9 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     self.__roiTransformNode = None
     self.__baselineVolume = None
+
+    self.__roi = None
+    self.__roiObserverTag = None
 
   def createUserInterface( self ):
     '''
@@ -36,34 +36,16 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     self.__roiSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onROIChanged)
 
-    self.__roi = None
+    
+    # initialize VR stuff
+    self.__vrLogic = slicer.modules.volumerendering.logic()
 
   def onROIChanged(self):
     roi = self.__roiSelector.currentNode()
-    # TODO: update ROI in the MRML node, remove observer, add new observer
-    # observe modifications of the ROI, change view origin as the ROI is
-    # changing
-    # In that same handler, call some logic function to recalculate ROI
-    # min/max, and update the transfer function accordingly
-
-    '''
-    m = vtk.vtkMatrix4x4()
-    n = slicer.mrmlScene.GetNodeByID('vtkMRMLScalarVolumeNode4')
-    n.GetIJKToRASMatrix(m)
-    n = slicer.mrmlScene.GetNodeByID('vtkMRMLScalarVolumeNode4')
-    n.GetIJKToRASMatrix(m)
-    n.GetIJKToRASDirectionMatrix(m)
-    m.SetElement(0,3,0)
-    t.SetAndObserveMatrixTransformToParent(m)
-    r = slicer.mrmlScene.GetNodeByID('vtkMRMLAnnotationROINode1')
-    r.SetAndObserveTransformNodeID(t.GetIDGetID())
-    '''
 
     if roi != None:
     
       pNode = self.parameterNode()
-      # initialize VR stuff
-      self.__vrLogic = slicer.modules.volumerendering.logic()
       # create VR node first time a valid ROI is selected
       if self.__vrDisplayNode == None:
         print 'VR node is ', self.__vrDisplayNode
@@ -95,8 +77,11 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       # TODO: update opacity function based on ROI content
       # self.__vrOpacityMap.RemoveAllPoints()
 
+      if self.__roi != None:
+        self.__roi.RemoveObserver(self.processROIEvents)
+
       self.__roi = slicer.mrmlScene.GetNodeByID(roi.GetID())
-      self.__roi.AddObserver('ModifiedEvent', self.processROIEvents)
+      self.__roiObserverTag = self.__roi.AddObserver('ModifiedEvent', self.processROIEvents)
      
   def processROIEvents(self,node,event):
     # get the range of intensities inside the ROI
@@ -204,8 +189,14 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     dm.SetElement(2,2,abs(dm.GetElement(2,2)))
     self.__roiTransformNode.SetAndObserveMatrixTransformToParent(dm)
 
+    if self.__roi != None:
+      self.__roi.VisibleOn()
+
     super(ChangeTrackerDefineROIStep, self).onEntry(comingFrom, transitionType)
 
   def onExit(self, goingTo, transitionType):
+    if self.__roi != None:
+      self.__roi.RemoveObserver(self.__roiObserverTag)
     self.__vrDisplayNode.VisibilityOff()
+    self.__roi.VisibleOff()
     super(ChangeTrackerDefineROIStep, self).onExit(goingTo, transitionType)
