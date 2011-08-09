@@ -20,12 +20,17 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     self.__layout = self.__parent.createUserInterface()
 
     # add radio box group
-    roiLabel = qt.QLabel( 'Select segmentation:' )
-    self.__roiSelector = slicer.qMRMLNodeComboBox()
-#    self.__roiSelector.setNodeTyes('vtkMRMLROIAnnotationNode')
-    self.__roiSelector.toolTip = "Choose the ROI segmentation"
+    self.__roiDeformableMetricCheck = qt.QCheckBox()
+    self.__roiSurfaceMetricCheck = qt.QCheckBox()
+    self.__roiIntensityMetricCheck = qt.QCheckBox()
 
-    self.__layout.addRow( roiLabel, self.__roiSelector )
+    label1 = qt.QLabel( 'Deformable metric' )
+    label2 = qt.QLabel( 'Intensity metric' )
+    label3 = qt.QLabel( 'Surface metric' )
+
+    self.__layout.addRow( label1, self.__roiDeformableMetricCheck )
+    self.__layout.addRow( label2, self.__roiIntensityMetricCheck )
+    self.__layout.addRow( label3, self.__roiSurfaceMetricCheck )
 
   def validate( self, desiredBranchId ):
     '''

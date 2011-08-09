@@ -49,7 +49,6 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__threshSlider.connect('valueChanged(double)', self.onThresholdChanged)
 
   def onThresholdChanged(self, newValue): 
-    print 'New threshold value: ', newValue
     
     self.__threshold[0] = newValue
 
@@ -123,6 +122,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
       viewNode = slicer.util.getNode('ViewNode')
       self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
       print 'SegmentROI step: create VR node ',self.__vrDisplayNode.GetID()
+      self.__vrDisplayNode.SetCurrentVolumeMapper(2)
 
     self.__vrDisplayNode.SetAndObserveVolumeNodeID(roiVolume.GetID())
     self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, roiVolume)

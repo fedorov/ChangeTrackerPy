@@ -2,6 +2,7 @@ from __main__ import qt, ctk, slicer
 
 from ChangeTrackerStep import *
 from Helper import *
+import PythonQt
 
 class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
@@ -36,7 +37,16 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     self.__roiSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.onROIChanged)
 
-    
+    # the ROI parameters
+    voiGroupBox = qt.QGroupBox()
+    voiGroupBox.setTitle( 'Define VOI' )
+    self.__layout.addWidget( voiGroupBox )
+
+    voiGroupBoxLayout = qt.QFormLayout( voiGroupBox )
+
+    self.__roiWidget = PythonQt.qSlicerAnnotationsModuleWidgets.qMRMLAnnotationROIWidget()
+    voiGroupBoxLayout.addWidget( self.__roiWidget )
+
     # initialize VR stuff
     self.__vrLogic = slicer.modules.volumerendering.logic()
 
@@ -52,6 +62,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
         print 'DEBUG: ChangeTracker DefineROI step: Creating VR node!'
         self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
         viewNode = slicer.util.getNode('ViewNode')
+        self.__vrDisplayNode.SetCurrentVolumeMapper(2)
         self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
 
         v = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
@@ -82,6 +93,10 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
       self.__roi = slicer.mrmlScene.GetNodeByID(roi.GetID())
       self.__roiObserverTag = self.__roi.AddObserver('ModifiedEvent', self.processROIEvents)
+
+      roi.SetInteractiveMode(1)
+
+      self.__roiWidget.setMRMLAnnotationROINode(roi)
      
   def processROIEvents(self,node,event):
     # get the range of intensities inside the ROI
