@@ -12,12 +12,18 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     self.__parent = super( ChangeTrackerAnalyzeROIStep, self )
 
+    self.__followupTransform = None
+
   def createUserInterface( self ):
     '''
     '''
 #    self.buttonBoxHints = self.ButtonBoxHidden
 
     self.__layout = self.__parent.createUserInterface()
+
+    # add registration button
+    self.__registrationButton = qt.QPushButton('Run registration')
+    self.__registrationStatus = qt.QLabel('Register scans')
 
     # add radio box group
     self.__roiDeformableMetricCheck = qt.QCheckBox()
@@ -28,9 +34,12 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     label2 = qt.QLabel( 'Intensity metric' )
     label3 = qt.QLabel( 'Surface metric' )
 
+    self.__layout.addRow(self.__registrationStatus, self.__registrationButton)
     self.__layout.addRow( label1, self.__roiDeformableMetricCheck )
     self.__layout.addRow( label2, self.__roiIntensityMetricCheck )
     self.__layout.addRow( label3, self.__roiSurfaceMetricCheck )
+
+    self.__registrationButton.connect('clicked()', self.onRegistrationRequest)
 
   def validate( self, desiredBranchId ):
     '''
@@ -39,138 +48,47 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     # check here that ROI is not empty and is within the baseline volume
     self.__parent.validationSucceeded(desiredBranchId)
 
-"""
-    # fill the comboBox with the taskNames
-    self.__taskComboBox.addItems( self.getTaskNames() )
-    self.__layout.addRow( Helper.CreateSpace( 20 ), self.__taskComboBox )
+  # def onEntry(self, comingFrom, transitionType):
 
-    # add empty row
-    self.__layout.addRow( "", qt.QWidget() )
+  def onRegistrationRequest(self):
 
+    # rigidly register followup to baseline
+    # TODO: do this in a separate step and allow manual adjustment?
+    # TODO: add progress reporting (BRAINSfit does not report progress though)
+    pNode = self.parameterNode()
+    baselineVolumeID = pNode.GetParameter('baselineVolumeID')
+    followupVolumeID = pNode.GetParameter('followupVolumeID')
+    self.__followupTransform = slicer.mrmlScene.CreateNodeByClass('vtkMRMLLinearTransformNode')
+    slicer.mrmlScene.AddNode(self.__followupTransform)
 
-    chooseModeLabel = qt.QLabel( 'Choose Mode' )
-    chooseModeLabel.setFont( self.__parent.getBoldFont() )
-    self.__layout.addRow( chooseModeLabel )
+    parameters = {}
+    parameters["fixedVolume"] = baselineVolumeID
+    parameters["movingVolume"] = followupVolumeID
+    parameters["initializeTransformMode"] = "useMomentsAlign"
+    parameters["useRigid"] = True
+    parameters["useScaleVersor3D"] = True
+    parameters["useScaleSkewVersor3D"] = True
+    parameters["useAffine"] = True
+    parameters["linearTransform"] = self.__followupTransform.GetID()
 
-    buttonBox = qt.QDialogButtonBox()
-    simpleButton = buttonBox.addButton( buttonBox.Discard )
-    simpleButton.setIcon( qt.QIcon() )
-    simpleButton.text = "Simple"
-    simpleButton.toolTip = "Click to use the simple mode."
-    advancedButton = buttonBox.addButton( buttonBox.Apply )
-    advancedButton.setIcon( qt.QIcon() )
-    advancedButton.text = "Advanced"
-    advancedButton.toolTip = "Click to use the advanced mode."
-    self.__layout.addWidget( buttonBox )
+    self.__cliNode = None
+    self.__cliNode = slicer.cli.run(slicer.modules.brainsfit, self.__cliNode, parameters)
 
-    # connect the simple and advanced buttons
-    simpleButton.connect( 'clicked()', self.goSimple )
-    advancedButton.connect( 'clicked()', self.goAdvanced )
-
-
-  def loadTasks( self ):
-    '''
-    Load all available Tasks and save them to self.__tasksList as key,value pairs of taskName and fileName
-    '''
-    if not self.logic():
-      Helper.Error( "No logic class!" )
-      return False
-
-    # we query the logic for a comma-separated string with the following format of each item:
-    # tasksName:tasksFile
-    tasksList = self.logic().GetTasks().split( ',' )
-
-    self.__tasksList.clear()
-
-    for t in tasksList:
-      task = t.split( ':' )
-      taskName = task[0]
-      taskFile = task[1]
-
-      # add this entry to out tasksList
-      self.__tasksList[taskName] = taskFile
-
-    return True
-
-  def loadTask( self ):
-    '''
-    '''
-    index = self.__taskComboBox.currentIndex
-
-    taskName = self.__taskComboBox.currentText
-    taskFile = self.__tasksList[taskName]
-
-    if not taskName or not taskFile:
-      # error!
-      Helper.Error( "Either taskName or taskFile was empty!" )
-      return False
-
-    # now get any loaded EMSTemplateNode which could fit our name
-    templateNodesPreLoad = slicer.mrmlScene.GetNodesByClassByName( 'vtkMRMLEMSTemplateNode', taskName )
-    if templateNodesPreLoad.GetNumberOfItems() > 0:
-      # this is strange behavior but we can continue in this case!
-      Helper.Warning( "We already have the template node in the scene and do not load it again!" )
-
-    else:
-
-      # there was no relevant template node in the scene, so let's import the mrml file
-      # this is the normal behavior!      
-      Helper.Debug( "Attempting to load task '" + taskName + "' from file '" + taskFile + "'" )
-
-      # only load if no relevant node exists
-      self.mrmlManager().ImportMRMLFile( taskFile )
+    self.__cliObserverTag = self.__cliNode.AddObserver('ModifiedEvent', self.processRegistrationCompletion)
+    self.__registrationStatus.setText('Wait ...')
+    self.__registrationButton.setEnabled(0)
 
 
-    # now get the loaded EMSTemplateNode
-    templateNodes = slicer.mrmlScene.GetNodesByClassByName( 'vtkMRMLEMSTemplateNode', taskName )
+  def processRegistrationCompletion(self, node, event):
+    status = node.GetStatusString()
+    self.__registrationStatus.setText('Registration '+status)
+    if status == 'Completed':
+      self.__registrationButton.setEnabled(1)
+  
+      pNode = self.parameterNode()
+      followupNode = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('followupVolumeID'))
+      followupNode.SetAndObserveTransformNodeID(self.__followupTransform.GetID())
+      
+      Helper.SetBgFgVolumes(pNode.GetParameter('baselineVolumeID'),pNode.GetParameter('followupVolumeID'))
 
-    if not templateNodes:
-      # error!
-      Helper.Error( "Could not find any template node after trying to load them!" )
-      return False
-
-    # we load the last template node which fits the taskname
-    templateNode = templateNodes.GetItemAsObject( templateNodes.GetNumberOfItems() - 1 )
-
-    loadResult = self.mrmlManager().SetLoadedParameterSetIndex( templateNode )
-    if not loadResult:
-      Helper.Info( "EMS node is corrupted - the manager could not be updated with new task: " + taskName )
-      #return False
-
-    self.logic().DefineTclTaskFullPathName( self.mrmlManager().GetTclTaskFilename() )
-
-    return True
-
-
-  def getTaskNames( self ):
-    '''
-    Get the taskNames of our tasksList
-    '''
-    return self.__tasksList.keys()
-
-  def goSimple( self ):
-    '''
-    '''
-
-    workflow = self.workflow()
-    if not workflow:
-      Helper.Error( "No valid workflow found!" )
-      return False
-
-    # we go forward in the simpleMode branch
-    workflow.goForward( 'SimpleMode' )
-
-
-  def goAdvanced( self ):
-    '''
-    '''
-
-    workflow = self.workflow()
-    if not workflow:
-      Helper.Error( "No valid workflow found!" )
-      return False
-
-    # we go forward in the advancedMode branch
-    workflow.goForward( 'AdvancedMode' )
-"""
-
+      pNode.SetParameter('followupTransformID', self.__followupTransform.GetID())

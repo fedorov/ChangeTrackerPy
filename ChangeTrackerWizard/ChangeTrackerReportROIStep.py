@@ -34,138 +34,34 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     # check here that ROI is not empty and is within the baseline volume
     self.__parent.validationSucceeded(desiredBranchId)
 
-"""
-    # fill the comboBox with the taskNames
-    self.__taskComboBox.addItems( self.getTaskNames() )
-    self.__layout.addRow( Helper.CreateSpace( 20 ), self.__taskComboBox )
+  def onEntry(self, comingFrom, transitionType):
+    # change the layout to Compare
+    lm = slicer.app.layoutManager()
+    lm.setLayout(12)
 
-    # add empty row
-    self.__layout.addRow( "", qt.QWidget() )
+    pNode = self.parameterNode()
 
+    # find the compare nodes and initialize them as we wish
+    sliceNodesCollection = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceNode')
+    sliceCompositeNodesCollection = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceCompositeNode')
+    for s in range(0,sliceNodesCollection.GetNumberOfItems()):
+      sNode = sliceNodesCollection.GetItemAsObject(s)
+      thisLayoutName = sNode.GetLayoutName()
 
-    chooseModeLabel = qt.QLabel( 'Choose Mode' )
-    chooseModeLabel.setFont( self.__parent.getBoldFont() )
-    self.__layout.addRow( chooseModeLabel )
+      if thisLayoutName.find('Compare1') == 0:
+        sNode.SetLayoutGrid(1,6)
+        scNode = sliceCompositeNodesCollection.GetItemAsObject(s)
+        scNode.SetBackgroundVolumeID(pNode.GetParameter('baselineVolumeID'))
+        scNode.SetForegroundVolumeID('')
+        scNode.SetLabelVolumeID('')
 
-    buttonBox = qt.QDialogButtonBox()
-    simpleButton = buttonBox.addButton( buttonBox.Discard )
-    simpleButton.setIcon( qt.QIcon() )
-    simpleButton.text = "Simple"
-    simpleButton.toolTip = "Click to use the simple mode."
-    advancedButton = buttonBox.addButton( buttonBox.Apply )
-    advancedButton.setIcon( qt.QIcon() )
-    advancedButton.text = "Advanced"
-    advancedButton.toolTip = "Click to use the advanced mode."
-    self.__layout.addWidget( buttonBox )
-
-    # connect the simple and advanced buttons
-    simpleButton.connect( 'clicked()', self.goSimple )
-    advancedButton.connect( 'clicked()', self.goAdvanced )
-
-
-  def loadTasks( self ):
-    '''
-    Load all available Tasks and save them to self.__tasksList as key,value pairs of taskName and fileName
-    '''
-    if not self.logic():
-      Helper.Error( "No logic class!" )
-      return False
-
-    # we query the logic for a comma-separated string with the following format of each item:
-    # tasksName:tasksFile
-    tasksList = self.logic().GetTasks().split( ',' )
-
-    self.__tasksList.clear()
-
-    for t in tasksList:
-      task = t.split( ':' )
-      taskName = task[0]
-      taskFile = task[1]
-
-      # add this entry to out tasksList
-      self.__tasksList[taskName] = taskFile
-
-    return True
-
-  def loadTask( self ):
-    '''
-    '''
-    index = self.__taskComboBox.currentIndex
-
-    taskName = self.__taskComboBox.currentText
-    taskFile = self.__tasksList[taskName]
-
-    if not taskName or not taskFile:
-      # error!
-      Helper.Error( "Either taskName or taskFile was empty!" )
-      return False
-
-    # now get any loaded EMSTemplateNode which could fit our name
-    templateNodesPreLoad = slicer.mrmlScene.GetNodesByClassByName( 'vtkMRMLEMSTemplateNode', taskName )
-    if templateNodesPreLoad.GetNumberOfItems() > 0:
-      # this is strange behavior but we can continue in this case!
-      Helper.Warning( "We already have the template node in the scene and do not load it again!" )
-
-    else:
-
-      # there was no relevant template node in the scene, so let's import the mrml file
-      # this is the normal behavior!      
-      Helper.Debug( "Attempting to load task '" + taskName + "' from file '" + taskFile + "'" )
-
-      # only load if no relevant node exists
-      self.mrmlManager().ImportMRMLFile( taskFile )
-
-
-    # now get the loaded EMSTemplateNode
-    templateNodes = slicer.mrmlScene.GetNodesByClassByName( 'vtkMRMLEMSTemplateNode', taskName )
-
-    if not templateNodes:
-      # error!
-      Helper.Error( "Could not find any template node after trying to load them!" )
-      return False
-
-    # we load the last template node which fits the taskname
-    templateNode = templateNodes.GetItemAsObject( templateNodes.GetNumberOfItems() - 1 )
-
-    loadResult = self.mrmlManager().SetLoadedParameterSetIndex( templateNode )
-    if not loadResult:
-      Helper.Info( "EMS node is corrupted - the manager could not be updated with new task: " + taskName )
-      #return False
-
-    self.logic().DefineTclTaskFullPathName( self.mrmlManager().GetTclTaskFilename() )
-
-    return True
-
-
-  def getTaskNames( self ):
-    '''
-    Get the taskNames of our tasksList
-    '''
-    return self.__tasksList.keys()
-
-  def goSimple( self ):
-    '''
-    '''
-
-    workflow = self.workflow()
-    if not workflow:
-      Helper.Error( "No valid workflow found!" )
-      return False
-
-    # we go forward in the simpleMode branch
-    workflow.goForward( 'SimpleMode' )
-
-
-  def goAdvanced( self ):
-    '''
-    '''
-
-    workflow = self.workflow()
-    if not workflow:
-      Helper.Error( "No valid workflow found!" )
-      return False
-
-    # we go forward in the advancedMode branch
-    workflow.goForward( 'AdvancedMode' )
-"""
+      # TODO: save ROI segmentation in pNode, set here for baseline as
+      # outline?
+      if thisLayoutName.find('Compare2') == 0:
+        sNode.SetLayoutGrid(1,6)
+        scNode = sliceCompositeNodesCollection.GetItemAsObject(s)
+        scNode.SetBackgroundVolumeID(pNode.GetParameter('followupVolumeID'))
+        scNode.SetForegroundVolumeID('')
+        scNode.SetLabelVolumeID('')
+        scNode.SetLinkedControl(1)
 
