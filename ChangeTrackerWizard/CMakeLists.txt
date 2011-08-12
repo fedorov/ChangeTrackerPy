@@ -5,6 +5,7 @@ SET(CTWizard_PYTHON_SCRIPTS
   ChangeTrackerSelectScansStep.py
   ChangeTrackerDefineROIStep.py
   ChangeTrackerSegmentROIStep.py
+  ChangeTrackerRegistrationStep.py
   ChangeTrackerAnalyzeROIStep.py
   ChangeTrackerReportROIStep.py
  )
