@@ -44,28 +44,27 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     # transform
     
     pNode = self.parameterNode()
-    followupVolumeID = pNode.GetParameter('followupVolumeID')
-    followupVolume = slicer.mrmlScene.GetNodeByID(followupVolumeID)
 
-    outputVolume = slicer.modules.volumes.logic().CloneVolume(slicer.mrmlScene, followupVolume, 'followupROI')
-    cropVolumeNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCropVolumeParametersNode')
-    cropVolumeNode.SetScene(slicer.mrmlScene)
-    cropVolumeNode.SetName('ChangeTracker_CropVolume_node2')
-    slicer.mrmlScene.AddNode(cropVolumeNode)
+    baselineVolumeROI = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
+    followupVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('followupVolumeID'))
+    followupVolumeROI = slicer.modules.volumes.logic().CloneVolume(slicer.mrmlScene, followupVolume, 'followupROI')
 
-    cropVolumeNode.SetAndObserveInputVolumeNodeID(pNode.GetParameter('followupVolumeID'))
-    cropVolumeNode.SetAndObserveROINodeID(pNode.GetParameter('roiID'))
-    # cropVolumeNode.SetAndObserveOutputVolumeNodeID(outputVolume.GetID())
+    parameters = {}
+    parameters["inputVolume"] = pNode.GetParameter('followupVolumeID')
+    parameters["referenceVolume"] = pNode.GetParameter('croppedBaselineVolumeID')
+    parameters["outputVolume"] = followupVolumeROI.GetID()
+    parameters["transformationFile"] = followupVolume.GetTransformNodeID()
+    parameters["interpolationType"] = "bs"
 
-    cropVolumeLogic = slicer.modules.cropvolume.logic()
-    cropVolumeLogic.Apply(cropVolumeNode)
+    self.__cliNode = None
+    self.__cliNode = slicer.cli.run(slicer.modules.resamplevolume2, self.__cliNode, parameters, 1)
 
-    # TODO: cropvolume error checking
-    pNode.SetParameter('croppedFollowupVolumeID',cropVolumeNode.GetOutputVolumeNodeID())
+    # TODO: error checking
+    pNode.SetParameter('croppedFollowupVolumeID',followupVolumeROI.GetID())
 
     # cropped volume will inherit the transform node from follow-up volume,
     # unset it
-    cropVolumeNode.SetAndObserveTransformNodeID(None)
+    followupVolumeROI.SetAndObserveTransformNodeID(None)
 
     Helper.SetBgFgVolumes(pNode.GetParameter('croppedBaselineVolumeID'),pNode.GetParameter('croppedFollowupVolumeID'))
     super(ChangeTrackerAnalyzeROIStep, self).onEntry(comingFrom, transitionType)

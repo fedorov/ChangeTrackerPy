@@ -51,17 +51,28 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       if thisLayoutName.find('Compare1') == 0:
         sNode.SetLayoutGrid(1,6)
         scNode = sliceCompositeNodesCollection.GetItemAsObject(s)
-        scNode.SetBackgroundVolumeID(pNode.GetParameter('baselineVolumeID'))
+        scNode.SetBackgroundVolumeID(pNode.GetParameter('croppedBaselineVolumeID'))
         scNode.SetForegroundVolumeID('')
         scNode.SetLabelVolumeID('')
+        scNode.SetLinkedControl(1)
 
       # TODO: save ROI segmentation in pNode, set here for baseline as
       # outline?
       if thisLayoutName.find('Compare2') == 0:
         sNode.SetLayoutGrid(1,6)
         scNode = sliceCompositeNodesCollection.GetItemAsObject(s)
-        scNode.SetBackgroundVolumeID(pNode.GetParameter('followupVolumeID'))
+        scNode.SetBackgroundVolumeID(pNode.GetParameter('croppedFollowupVolumeID'))
         scNode.SetForegroundVolumeID('')
         scNode.SetLabelVolumeID('')
         scNode.SetLinkedControl(1)
 
+    # link views
+    for s in range(0,sliceNodesCollection.GetNumberOfItems()):
+      sNode = sliceNodesCollection.GetItemAsObject(s)
+      thisLayoutName = sNode.GetLayoutName()
+      if thisLayoutName.find('Compare') == 0:
+        scNode = sliceCompositeNodesCollection.GetItemAsObject(s)
+        scNode.SetLinkedControl(1)
+
+      appLogic = slicer.app.mrmlApplicationLogic()
+      appLogic.PropagateVolumeSelection()

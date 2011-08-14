@@ -87,11 +87,13 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     baselineVolumeID = pNode.GetParameter('baselineVolumeID')
     baselineVolume = slicer.mrmlScene.GetNodeByID(baselineVolumeID)
 
-    outputVolume = slicer.modules.volumes.logic().CloneVolume(slicer.mrmlScene, baselineVolume, 'baselineROI')
     cropVolumeNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCropVolumeParametersNode')
     cropVolumeNode.SetScene(slicer.mrmlScene)
     cropVolumeNode.SetName('ChangeTracker_CropVolume_node')
+    cropVolumeNode.SetIsotropicResampling(True)
+    cropVolumeNode.SetSpacingScalingConst(0.5)
     slicer.mrmlScene.AddNode(cropVolumeNode)
+    # TODO hide from MRML tree
 
     cropVolumeNode.SetAndObserveInputVolumeNodeID(pNode.GetParameter('baselineVolumeID'))
     cropVolumeNode.SetAndObserveROINodeID(pNode.GetParameter('roiID'))
@@ -101,6 +103,8 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     cropVolumeLogic.Apply(cropVolumeNode)
 
     # TODO: cropvolume error checking
+    outputVolume = slicer.mrmlScene.GetNodeByID(cropVolumeNode.GetOutputVolumeNodeID())
+    outputVolume.SetName("baselineROI")
     pNode.SetParameter('croppedBaselineVolumeID',cropVolumeNode.GetOutputVolumeNodeID())
 
     Helper.SetBgFgVolumes(pNode.GetParameter('croppedBaselineVolumeID'),'')
@@ -150,7 +154,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     # create a label volume from the ROI
     if self.__roiSegmentationNode == None:
       vl = slicer.modules.volumes.logic()
-      self.__roiSegmentationNode = vl.CreateLabelVolume(slicer.mrmlScene, roiVolume, 'ROI_Segmentation')
+      self.__roiSegmentationNode = vl.CreateLabelVolume(slicer.mrmlScene, roiVolume, 'baselineROI_segmentation')
    
     Helper.SetLabelVolume(self.__roiSegmentationNode.GetID())
 

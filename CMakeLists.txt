@@ -1,5 +1,6 @@
 ADD_SUBDIRECTORY(MRML)
 ADD_SUBDIRECTORY(ChangeTrackerWizard)
+ADD_SUBDIRECTORY(ChangeTrackerMetrics)
 
 SET(CT_PYTHON_SCRIPTS
     ChangeTracker.py

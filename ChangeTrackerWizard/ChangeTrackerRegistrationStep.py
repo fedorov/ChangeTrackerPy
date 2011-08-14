@@ -33,7 +33,11 @@ class ChangeTrackerRegistrationStep( ChangeTrackerStep ) :
     '''
     '''
     self.__parent.validate( desiredBranchId )
-    # check here that ROI is not empty and is within the baseline volume
+    pNode = self.parameterNode()
+    followupVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('followupVolumeID'))
+    followupTransform = followupVolume.GetTransformNodeID()
+    if followupTransform == None:
+      self.__parent.validationFailed(desiredBranchId)
     self.__parent.validationSucceeded(desiredBranchId)
 
   # def onEntry(self, comingFrom, transitionType):
