@@ -25,7 +25,7 @@
       <longflag>--sensitivityThreshold</longflag>
       <description>This parameter should be between 0 and 1, and defines how sensitive the metric should be to the intensity changes.</description>
       <label>Sensitivity</label>
-      <default>0.99</default>
+      <default>0.9</default>
     </float>
 
     <integer>

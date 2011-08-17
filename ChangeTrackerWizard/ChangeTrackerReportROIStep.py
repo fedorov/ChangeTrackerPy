@@ -25,7 +25,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 #    self.__roiSelector.setNodeTyes('vtkMRMLROIAnnotationNode')
     self.__roiSelector.toolTip = "Choose the ROI segmentation"
 
-    self.__layout.addRow( roiLabel, self.__roiSelector )
+    # self.__layout.addRow( roiLabel, self.__roiSelector )
 
   def validate( self, desiredBranchId ):
     '''
@@ -47,7 +47,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     for s in range(0,sliceNodesCollection.GetNumberOfItems()):
       sNode = sliceNodesCollection.GetItemAsObject(s)
       thisLayoutName = sNode.GetLayoutName()
-
+      # TODO: check they should have the same layout name!
       if thisLayoutName.find('Compare1') == 0:
         sNode.SetLayoutGrid(1,6)
         scNode = sliceCompositeNodesCollection.GetItemAsObject(s)

@@ -68,6 +68,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     thresh.SetOutValue(0)
     thresh.ReplaceOutOn()
     thresh.ReplaceInOn()
+    thresh.Update()
 
     self.__roiSegmentationNode.SetAndObserveImageData(thresh.GetOutput())
 
@@ -123,7 +124,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
     if self.__vrDisplayNode == None:
       self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
-      viewNode = slicer.util.getNode('ViewNode')
+      viewNode = slicer.util.getNode('vtkMRMLViewNode1')
       self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
       print 'SegmentROI step: create VR node ',self.__vrDisplayNode.GetID()
       self.__vrDisplayNode.SetCurrentVolumeMapper(2)
@@ -155,6 +156,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     if self.__roiSegmentationNode == None:
       vl = slicer.modules.volumes.logic()
       self.__roiSegmentationNode = vl.CreateLabelVolume(slicer.mrmlScene, roiVolume, 'baselineROI_segmentation')
+      self.parameterNode().SetParameter('croppedBaselineVolumeSegmentationID', self.__roiSegmentationNode.GetID())
    
     Helper.SetLabelVolume(self.__roiSegmentationNode.GetID())
 

@@ -40,12 +40,12 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # the ROI parameters
     voiGroupBox = qt.QGroupBox()
     voiGroupBox.setTitle( 'Define VOI' )
-    self.__layout.addWidget( voiGroupBox )
+    self.__layout.addRow( voiGroupBox )
 
     voiGroupBoxLayout = qt.QFormLayout( voiGroupBox )
 
     self.__roiWidget = PythonQt.qSlicerAnnotationsModuleWidgets.qMRMLAnnotationROIWidget()
-    voiGroupBoxLayout.addWidget( self.__roiWidget )
+    voiGroupBoxLayout.addRow( self.__roiWidget )
 
     # initialize VR stuff
     self.__vrLogic = slicer.modules.volumerendering.logic()
@@ -61,7 +61,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
         print 'VR node is ', self.__vrDisplayNode
         print 'DEBUG: ChangeTracker DefineROI step: Creating VR node!'
         self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
-        viewNode = slicer.util.getNode('ViewNode')
+        viewNode = slicer.util.getNode('vtkMRMLViewNode1')
         self.__vrDisplayNode.SetCurrentVolumeMapper(2)
         self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
 
@@ -166,6 +166,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
   def validate( self, desiredBranchId ):
     '''
     '''
+    print 'ChangeTrackerDefineROIStep: validate'
     self.__parent.validate( desiredBranchId )
     roi = self.__roiSelector.currentNode()
     if roi != None:
@@ -210,6 +211,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     super(ChangeTrackerDefineROIStep, self).onEntry(comingFrom, transitionType)
 
   def onExit(self, goingTo, transitionType):
+    print 'ChangeTrackerDefineROIStep: onExit'
     if self.__roi != None:
       self.__roi.RemoveObserver(self.__roiObserverTag)
     self.__vrDisplayNode.VisibilityOff()
