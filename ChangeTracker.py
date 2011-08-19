@@ -114,6 +114,7 @@ class ChangeTrackerWidget:
     if self.parameterNode == None:
       self.parameterNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLScriptedModuleNode')
       self.parameterNode.SetModuleName('ChangeTracker')
+      slicer.mrmlScene.AddNode(self.parameterNode)
  
     # Propagate the workflow, the logic and the MRML Manager to the steps
     for s in allSteps:
