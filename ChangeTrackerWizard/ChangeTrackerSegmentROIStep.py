@@ -30,9 +30,9 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__layout = self.__parent.createUserInterface()
 
     threshLabel = qt.QLabel('Choose threshold:')
-    self.__threshSlider = ctk.ctkSliderWidget()
-    self.__threshSlider.decimals = 0
-    self.__threshSlider.singleStep = 1
+    self.__threshRange = slicer.qMRMLRangeWidget()
+    self.__threshRange.decimals = 0
+    self.__threshRange.singleStep = 1
 
     roiLabel = qt.QLabel( 'Select segmentation:' )
     self.__roiLabelSelector = slicer.qMRMLNodeComboBox()
@@ -43,28 +43,32 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__roiLabelSelector.addEnabled = 0
     self.__roiLabelSelector.setMRMLScene(slicer.mrmlScene)
 
-    self.__layout.addRow(threshLabel, self.__threshSlider)
+    self.__layout.addRow(threshLabel, self.__threshRange)
     # self.__layout.addRow( roiLabel, self.__roiLabelSelector )
 
-    self.__threshSlider.connect('valueChanged(double)', self.onThresholdChanged)
+    self.__threshRange.connect('valuesChanged(double,double)', self.onThresholdChanged)
 
-  def onThresholdChanged(self, newValue): 
+  def onThresholdChanged(self): 
     
-    self.__threshold[0] = newValue
+    if self.__vrOpacityMap == None:
+      return
+
+    range0 = self.__threshRange.minimumValue
+    range1 = self.__threshRange.maximumValue
 
     self.__vrOpacityMap.RemoveAllPoints()
     self.__vrOpacityMap.AddPoint(0,0)
     self.__vrOpacityMap.AddPoint(0,0)
-    self.__vrOpacityMap.AddPoint(self.__threshold[0]-1,0)
-    self.__vrOpacityMap.AddPoint(self.__threshold[0],1)
-    self.__vrOpacityMap.AddPoint(self.__threshold[1],1)
-    self.__vrOpacityMap.AddPoint(self.__threshold[1]+1,0)
+    self.__vrOpacityMap.AddPoint(range0-1,0)
+    self.__vrOpacityMap.AddPoint(range0,1)
+    self.__vrOpacityMap.AddPoint(range1,1)
+    self.__vrOpacityMap.AddPoint(range1+1,0)
 
     # update the label volume accordingly
     thresh = vtk.vtkImageThreshold()
     thresh.SetInput(self.__roiVolume.GetImageData())
-    thresh.ThresholdBetween(self.__threshold[0], self.__threshold[1])
-    thresh.SetInValue(6)
+    thresh.ThresholdBetween(range0, range1)
+    thresh.SetInValue(10)
     thresh.SetOutValue(0)
     thresh.ReplaceOutOn()
     thresh.ReplaceInOn()
@@ -115,10 +119,8 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     roiVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
     roiImage = roiVolume.GetImageData()
     roiImageRange = roiImage.GetScalarRange()
-    self.__threshold[0] = roiImageRange[0]
-    self.__threshold[1] = roiImageRange[1]
-    self.__threshSlider.minimum =  self.__threshold[0]
-    self.__threshSlider.maximum = self.__threshold[1]
+    self.__threshRange.minimum =  roiImageRange[0]
+    self.__threshRange.maximum = roiImageRange[1]
     # TODO: initialize volume selectors, fit ROI to slice viewers, create
     # label volume, initialize the threshold, initialize volume rendering ?
 
@@ -147,17 +149,29 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__vrOpacityMap.RemoveAllPoints()
     self.__vrOpacityMap.AddPoint(0,0)
     self.__vrOpacityMap.AddPoint(0,0)
-    self.__vrOpacityMap.AddPoint(self.__threshold[0]-1,0)
-    self.__vrOpacityMap.AddPoint(self.__threshold[0],1)
-    self.__vrOpacityMap.AddPoint(self.__threshold[1],1)
-    self.__vrOpacityMap.AddPoint(self.__threshold[1]+1,0)
+    self.__vrOpacityMap.AddPoint(roiImageRange[0]-1,0)
+    self.__vrOpacityMap.AddPoint(roiImageRange[0],1)
+    self.__vrOpacityMap.AddPoint(roiImageRange[1],1)
+    self.__vrOpacityMap.AddPoint(roiImageRange[1]+1,0)
 
     # create a label volume from the ROI
     if self.__roiSegmentationNode == None:
       vl = slicer.modules.volumes.logic()
       self.__roiSegmentationNode = vl.CreateLabelVolume(slicer.mrmlScene, roiVolume, 'baselineROI_segmentation')
+
+      # initialize the color map the same way as in Slicer3
+      # don't know how to get that node by some ID, so I had to experiment to
+      # get the right one ...
+      labelsColorNode = slicer.modules.colors.logic().GetColorTableNodeID(10)
+      self.__roiSegmentationNode.GetDisplayNode().SetAndObserveColorNodeID(labelsColorNode)
+
       self.parameterNode().SetParameter('croppedBaselineVolumeSegmentationID', self.__roiSegmentationNode.GetID())
    
     Helper.SetLabelVolume(self.__roiSegmentationNode.GetID())
 
     self.__roiVolume = roiVolume
+
+    self.__threshRange.minimumValue = 0.5*(roiImageRange[0]+roiImageRange[1])
+    self.__threshRange.maximumValue = roiImageRange[1]
+
+    self.onThresholdChanged()
