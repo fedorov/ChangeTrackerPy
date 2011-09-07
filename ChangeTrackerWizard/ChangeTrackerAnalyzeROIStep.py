@@ -11,7 +11,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
   def __init__( self, stepid ):
     self.initialize( stepid )
-    self.setName( '5. ROI Analysis' )
+    self.setName( '4. ROI Analysis' )
     self.setDescription( 'Select the analysis method for the selected ROI.' )
 
     self.__parent = super( ChangeTrackerAnalyzeROIStep, self )
@@ -33,29 +33,63 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     
     self.__metricCheckboxList = {}
 
+    self.__basicFrame = ctk.ctkCollapsibleButton()
+    self.__basicFrame.text = "Basic settings"
+    self.__basicFrame.collapsed = 0
+    basicFrameLayout = qt.QFormLayout(self.__basicFrame)
+    self.__layout.addRow(self.__basicFrame)
+
+    self.__advancedFrame = ctk.ctkCollapsibleButton()
+    self.__advancedFrame.text = "Advanced settings"
+    self.__advancedFrame.collapsed = 1
+    boxLayout = qt.QVBoxLayout(self.__advancedFrame)
+    self.__layout.addRow(self.__advancedFrame)
+
+    self.__metricsFrame = ctk.ctkCollapsibleButton()
+    self.__metricsFrame.text = "Change Detection Metrics"
+    self.__metricsFrame.collapsed = 0
+    metricsFrameLayout = qt.QVBoxLayout(self.__metricsFrame)
+    boxLayout.addWidget(self.__metricsFrame)
+
+    self.__registrationFrame = ctk.ctkCollapsibleButton()
+    self.__registrationFrame.text = "Registration"
+    self.__registrationFrame.collapsed = 0
+    registrationFrameLayout = qt.QFormLayout(self.__registrationFrame)
+    boxLayout.addWidget(self.__registrationFrame)
+
+    metricsTabs = qt.QTabWidget()
+    metricsFrameLayout.addWidget(metricsTabs)
+
     # TODO: error checking!
     for m in changeTrackerMetrics:
       pluginName = os.path.split(m)[1]
       metricName = re.match(r"ChangeTracker(\w+)Metric", pluginName).group(1)
+      print "Discovered metric ",metricName
       label = qt.QLabel(metricName)
       checkbox = qt.QCheckBox()
       self.__metricCheckboxList[checkbox] = metricName
-      self.__layout.addRow(label, checkbox)
 
-      groupBox = qt.QGroupBox()
-      groupBox.setTitle(metricName)
-      self.__layout.addRow(groupBox)
-      groupBoxLayout = qt.QFormLayout(groupBox)
+      # initialize basic frame
+      basicFrameLayout.addRow(label, checkbox)
 
+      # initialize advanced frame
+      metricGui = slicer.util.getModuleGui(pluginName)
+      parametersWidget = Helper.findChildren(metricGui, text='Parameters')[0]
 
-      metricWidget = slicer.util.getModuleGui(pluginName.lower())
-      if metricWidget != None:
-        groupBoxLayout.addRow(metricWidget)
+      if parametersWidget != None:
+        metricWidget = qt.QWidget()
+        metricLayout = qt.QFormLayout(metricWidget)
+        metricLayout.addRow(parametersWidget)
+        metricsTabs.addTab(metricWidget, metricName)
+      
+    self.__transformSelector = slicer.qMRMLNodeComboBox()
+    self.__transformSelector.toolTip = "Transform aligning the follow-up scan with the baseline"
+    self.__transformSelector.nodeTypes = ['vtkMRMLLinearTransformNode']
+    self.__transformSelector.noneEnabled = 1
+    self.__transformSelector.setMRMLScene(slicer.mrmlScene)
 
-      slicer.util.findChildren(metricWidget, text='IO')[0].hide()
-      metricWidget.children()[3].hide()
-      metricWidget.children()[4].hide()
-      metricWidget.children()[5].hide()
+    transformSelectorLabel = qt.QLabel('Transform: ')
+    registrationFrameLayout.addRow(transformSelectorLabel, self.__transformSelector)
 
     # TODO (?) query parameters for each metric, and put each metric into a
     # separate frame, with the parameters GUI initialized. Might be a nice
@@ -102,6 +136,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     if nSelectedMetrics > 0:
       self.__parent.validationSucceeded(desiredBranchId)
+      print 'Validation from Analysis step succeeded!'
     else:
       self.__parent.validationFailed(desiredBranchId, "At least one metric should be selected to proceed to the next step!")
 
