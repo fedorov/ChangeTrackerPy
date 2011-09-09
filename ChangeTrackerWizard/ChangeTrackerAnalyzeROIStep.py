@@ -6,6 +6,7 @@ from Helper import *
 import glob
 import re
 import os
+import string
 
 class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
@@ -57,8 +58,8 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     registrationFrameLayout = qt.QFormLayout(self.__registrationFrame)
     boxLayout.addWidget(self.__registrationFrame)
 
-    metricsTabs = qt.QTabWidget()
-    metricsFrameLayout.addWidget(metricsTabs)
+    self.__metricsTabs = qt.QTabWidget()
+    metricsFrameLayout.addWidget(self.__metricsTabs)
 
     # TODO: error checking!
     for m in changeTrackerMetrics:
@@ -80,7 +81,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
         metricWidget = qt.QWidget()
         metricLayout = qt.QFormLayout(metricWidget)
         metricLayout.addRow(parametersWidget)
-        metricsTabs.addTab(metricWidget, metricName)
+        self.__metricsTabs.addTab(metricWidget, metricName)
       
     self.__transformSelector = slicer.qMRMLNodeComboBox()
     self.__transformSelector.toolTip = "Transform aligning the follow-up scan with the baseline"
@@ -102,37 +103,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       
     # to proceed to the next step, at least one metric should be selected!
     nSelectedMetrics = 0
-    # parameters will be the same for all metrics
-    pNode = self.parameterNode()
-    parameters = {}
-    parameters['baselineVolume'] = pNode.GetParameter('croppedBaselineVolumeID')
-    parameters['followupVolume'] = pNode.GetParameter('croppedFollowupVolumeID')
-    parameters['baselineSegmentationVolume'] = pNode.GetParameter('croppedBaselineVolumeSegmentationID')
-    
-    baselineVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
-
-    moduleManager = slicer.app.moduleManager()
     for m in self.__metricCheckboxList:
       if m.isChecked():
         nSelectedMetrics = nSelectedMetrics+1
-
-        # TODO: processing should be separated from the workflow! need to move
-        # this into a different place
-        pluginName = 'ChangeTracker'+self.__metricCheckboxList[m]+'Metric'
-        pluginName = pluginName.lower()
-        
-        vl = slicer.modules.volumes.logic()
-        outputVolume = vl.CreateLabelVolume(slicer.mrmlScene, baselineVolume, 'changesVolume_'+self.__metricCheckboxList[m])
-        parameters['outputVolume'] = outputVolume.GetID()
-
-        plugin = moduleManager.module(pluginName)
-        if plugin != None:
-          # QUESTION: how can I get the pointer to the module object based on
-          # the module name?
-          cliNode = None
-          cliNode = slicer.cli.run(plugin, cliNode, parameters, 1)
-
-          
 
     if nSelectedMetrics > 0:
       self.__parent.validationSucceeded(desiredBranchId)
@@ -141,11 +114,93 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       self.__parent.validationFailed(desiredBranchId, "At least one metric should be selected to proceed to the next step!")
 
   def onEntry(self, comingFrom, transitionType):
-    # resample the ROI from the follow-up volume, taking into account the
-    # transform
+    super(ChangeTrackerAnalyzeROIStep, self).onEntry(comingFrom, transitionType)
+
+  def onExit(self, goingTo, transitionType):
+    '''
+    Do the processing for this step here
+    '''
+    self.__parent.onExit(goingTo, transitionType)
+
+    self.updateParametersFromWidget()
+
+    self.doStepProcessing()
+
+  def updateWidgetFromParameters(self):
+    pNode = self.parametersNode()
+    # update widget elements
     
+  def updateParametersFromWidget(self):
     pNode = self.parameterNode()
 
+    # which metrics have been selected?
+    metricsList = ''
+    for m in self.__metricCheckboxList:
+      if m.isChecked():
+        if metricsList != '':
+          metricsList = metricsList + ','     
+        metricsList = metricsList + self.__metricCheckboxList[m]
+    print 'Metrics = ', metricsList
+    pNode.SetParameter('metrics', metricsList)
+
+    # do we have a transform node?
+    followupTransform = self.__transformSelector.currentNode()
+    print 'Followup transform is', followupTransform
+    if followupTransform != None:
+      pNode.SetParameter('followupTransformID', followupTransform.GetID())
+    else:
+      pNode.SetParameter('followupTransformID', '')
+
+  def doStepProcessing(self):
+    print 'Step processing'
+    '''
+    Step logic:
+      1) register followup to baseline
+      2) resample followup to baseline ROI
+      3) given baselineROI, followupROI and baseline segmentation, run each of
+      the change detection metrics
+    '''
+    pNode = self.parameterNode()
+
+    # (1) register followup to baseline
+    # If the followup transform is initialized, do not register!
+    if pNode.GetParameter('followupTransformID') == '':
+      baselineVolumeID = pNode.GetParameter('baselineVolumeID')
+      followupVolumeID = pNode.GetParameter('followupVolumeID')
+      self.__followupTransform = slicer.mrmlScene.CreateNodeByClass('vtkMRMLLinearTransformNode')
+      slicer.mrmlScene.AddNode(self.__followupTransform)
+
+      parameters = {}
+      parameters["fixedVolume"] = baselineVolumeID
+      parameters["movingVolume"] = followupVolumeID
+      parameters["initializeTransformMode"] = "useMomentsAlign"
+      parameters["useRigid"] = True
+      parameters["useScaleVersor3D"] = True
+      parameters["useScaleSkewVersor3D"] = True
+      parameters["useAffine"] = True
+      parameters["linearTransform"] = self.__followupTransform.GetID()
+
+      # FIXME: make sure brainsfit is available first?
+      cliNode = None
+      cliNode = slicer.cli.run(slicer.modules.brainsfit, cliNode, parameters, 1)
+      
+      status = cliNode.GetStatusString()
+      if status == 'Completed':
+        Helper.Info('registration completed OK')
+      else:
+        Helper.Error('Failed to register!')
+
+      pNode.SetParameter('followupTransformID', self.__followupTransform.GetID())
+
+      print 'AnalyzeROIStep: registration completed!'
+    else:
+      print 'AnalyzeROIStep: registration not required!'
+
+    # self.__cliObserverTag = self.__cliNode.AddObserver('ModifiedEvent', self.processRegistrationCompletion)
+    # self.__registrationStatus.setText('Wait ...')
+    # self.__registrationButton.setEnabled(0)
+
+    # (2) resample followup to baselineROI
     baselineVolumeROI = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
     followupVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('followupVolumeID'))
     followupVolumeROI = slicer.modules.volumes.logic().CloneVolume(slicer.mrmlScene, followupVolume, 'followupROI')
@@ -154,20 +209,59 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     parameters["inputVolume"] = pNode.GetParameter('followupVolumeID')
     parameters["referenceVolume"] = pNode.GetParameter('croppedBaselineVolumeID')
     parameters["outputVolume"] = followupVolumeROI.GetID()
-    parameters["transformationFile"] = followupVolume.GetTransformNodeID()
+    parameters["transformationFile"] = pNode.GetParameter('followupTransformID')
     parameters["interpolationType"] = "bs"
 
-    self.__cliNode = None
-    self.__cliNode = slicer.cli.run(slicer.modules.resamplevolume2, self.__cliNode, parameters, 1)
+    cliNode = None
+    cliNode = slicer.cli.run(slicer.modules.resamplevolume2, cliNode, parameters, 1)
 
-    # TODO: error checking
-    pNode.SetParameter('croppedFollowupVolumeID',followupVolumeROI.GetID())
+    status = cliNode.GetStatusString()
+    if status == 'Completed':
+      Helper.Info('resampleVolume2 completed OK')
+      pNode.SetParameter('croppedFollowupVolumeID', followupVolumeROI.GetID())
+    else:
+      Helper.Error('Failed to resample!')
 
-    # cropped volume will inherit the transform node from follow-up volume,
-    # unset it
-    followupVolumeROI.SetAndObserveTransformNodeID(None)
+    # (3) calculate each of the metrics
+    # most of the parameters will be the same for all metrics
+    parameters = {}
+    parameters['baselineVolume'] = pNode.GetParameter('croppedBaselineVolumeID')
+    parameters['followupVolume'] = pNode.GetParameter('croppedFollowupVolumeID')
+    parameters['baselineSegmentationVolume'] = pNode.GetParameter('croppedBaselineVolumeSegmentationID')
+    
+    baselineVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
 
-    Helper.SetBgFgVolumes(pNode.GetParameter('croppedBaselineVolumeID'),pNode.GetParameter('croppedFollowupVolumeID'))
-    super(ChangeTrackerAnalyzeROIStep, self).onEntry(comingFrom, transitionType)
+    metricsList = pNode.GetParameter('metrics')
 
+    if metricsList == '':
+      Helper.Error('doStepProcessing(): metrics list is empty!')
+      
+    resultsList = ''
 
+    moduleManager = slicer.app.moduleManager()
+    for m in string.split(metricsList,','):
+      # TODO: processing should be separated from the workflow! need to move
+      # this into a different place
+      pluginName = 'ChangeTracker'+m+'Metric'
+      # pluginName = pluginName.lower()
+        
+      vl = slicer.modules.volumes.logic()
+      outputVolume = vl.CreateLabelVolume(slicer.mrmlScene, baselineVolume, 'changesVolume_'+m)
+      parameters['outputVolume'] = outputVolume.GetID()
+
+      plugin = moduleManager.module(pluginName)
+      if plugin != None:
+        # QUESTION: how can I get the pointer to the module object based on
+        # the module name?
+        cliNode = None
+        Helper.Info('About to run '+m+' metric!')
+        cliNode = slicer.cli.run(plugin, cliNode, parameters, 1)
+        
+      if resultsList != '':
+          resultsList = resultsList + ','
+      resultsList = resultsList + outputVolume.GetID()
+
+    pNode.SetParameter('results', resultsList)
+
+    Helper.Info('Selected metrics: '+pNode.GetParameter('metrics'))
+    Helper.Info('Metrics processing results:'+pNode.GetParameter('results'))
