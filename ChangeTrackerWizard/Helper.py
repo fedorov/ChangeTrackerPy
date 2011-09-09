@@ -92,3 +92,28 @@ class Helper( object ):
     selectionNode = appLogic.GetSelectionNode()
     selectionNode.SetReferenceActiveLabelVolumeID(lb)
     appLogic.PropagateVolumeSelection()
+
+  @staticmethod
+  def findChildren(widget=None,name="",text=""):
+    """ return a list of child widgets that match the passed name """
+    # TODO: figure out why the native QWidget.findChildren method
+    # does not seem to work from PythonQt
+    if not widget:
+      widget = mainWindow()
+    children = []
+    parents = [widget]
+    while parents != []:
+      p = parents.pop()
+      parents += p.children()
+      if name and p.name.find(name)>=0:
+        children.append(p)
+      elif text: 
+        try:
+          p.text
+          if p.text.find(text)>=0:
+            children.append(p)
+        except AttributeError:
+          pass
+    return children
+
+

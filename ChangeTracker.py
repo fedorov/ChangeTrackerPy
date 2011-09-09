@@ -39,9 +39,6 @@ class ChangeTrackerWidget:
     if slicer.mrmlScene.GetTagByClassName( "vtkMRMLScriptedModuleNode" ) != 'ScriptedModule':
       slicer.mrmlScene.RegisterNodeClass(vtkMRMLScriptedModuleNode())
 
-    # register ChangeTracker parameter node class
-    # p = vtkMRMLChangeTrackerParameterNode.New()
-
     # register default slots
     #self.parent.connect('mrmlSceneChanged(vtkMRMLScene*)', self.onMRMLSceneChanged)      
 
@@ -80,7 +77,6 @@ class ChangeTrackerWidget:
     selectScansStep = ChangeTrackerWizard.ChangeTrackerSelectScansStep( 'SelectScans'  )
     defineROIStep = ChangeTrackerWizard.ChangeTrackerDefineROIStep( 'DefineROI'  )
     segmentROIStep = ChangeTrackerWizard.ChangeTrackerSegmentROIStep( 'SegmentROI'  )
-    registrationStep = ChangeTrackerWizard.ChangeTrackerRegistrationStep( 'Registration'  )
     analyzeROIStep = ChangeTrackerWizard.ChangeTrackerAnalyzeROIStep( 'AnalyzeROI'  )
     reportROIStep = ChangeTrackerWizard.ChangeTrackerReportROIStep( 'ReportROI'  )
 
@@ -90,15 +86,13 @@ class ChangeTrackerWidget:
     allSteps.append( selectScansStep )
     allSteps.append( defineROIStep )
     allSteps.append( segmentROIStep )
-    allSteps.append( registrationStep )
     allSteps.append( analyzeROIStep )
     allSteps.append( reportROIStep )
 
     # Add transition for the first step which let's the user choose between simple and advanced mode
     self.workflow.addTransition( selectScansStep, defineROIStep )
     self.workflow.addTransition( defineROIStep, segmentROIStep )
-    self.workflow.addTransition( segmentROIStep, registrationStep )
-    self.workflow.addTransition( registrationStep, analyzeROIStep )
+    self.workflow.addTransition( segmentROIStep, analyzeROIStep )
     self.workflow.addTransition( analyzeROIStep, reportROIStep )
 
     nNodes = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLScriptedModuleNode')
@@ -136,3 +130,6 @@ class ChangeTrackerWidget:
 
     # compress the layout
       #self.layout.addStretch(1)        
+ 
+  def enter(self):
+    print "ChangeTracker: enter() called"

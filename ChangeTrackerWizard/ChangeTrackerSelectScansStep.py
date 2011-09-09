@@ -6,6 +6,7 @@ from Helper import *
 class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
 
   def __init__( self, stepid ):
+    print 'Select scans: init'
     self.initialize( stepid )
     self.setName( '1. Select input scans' )
     self.setDescription( 'Select the baseline and follow-up scans to be compared.' )
@@ -15,6 +16,7 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
   def createUserInterface( self ):
     '''
     '''
+    print 'SelectScans step: createInterface'
     # TODO: might make sense to hide the button for the last step at this
     # point, but the widget does not have such option
     self.__layout = self.__parent.createUserInterface()
@@ -34,11 +36,13 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
     self.__followupVolumeSelector.addEnabled = 0
    
     loadDataButton = qt.QPushButton('Load test data')
-    self.__layout.addRow( '', loadDataButton)
+    self.__layout.addRow(loadDataButton)
     loadDataButton.connect('clicked()', self.loadData)
 
     self.__layout.addRow( baselineScanLabel, self.__baselineVolumeSelector )
     self.__layout.addRow( followupScanLabel, self.__followupVolumeSelector )
+
+    self.updateWidgetFromParameters(self.parameterNode())
 
   def loadData(self):
     vl = slicer.modules.volumes.logic()
@@ -48,9 +52,10 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
   def validate( self, desiredBranchId ):
     '''
     '''
+    print 'SelectScans step: validate'
     self.__parent.validate( desiredBranchId )
-    # check here that the selectors are not empty
 
+    # check here that the selectors are not empty
     baseline = self.__baselineVolumeSelector.currentNode()
     followup = self.__followupVolumeSelector.currentNode()
 
@@ -72,3 +77,20 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
     else:
       self.__parent.validationFailed(desiredBranchId, 'Error','Please select both baseline and followup volumes!')
 
+  def onEntry(self, comingFrom, transitionType):
+    self.__parent.onEntry(comingFrom, transitionType)
+    print 'SelectScans step: onEntry'
+    #self.updateWidgetFromParameters(self.parameterNode())
+    #super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
+
+  def onExit(self, goingTo, transitionType):
+    print 'SelectScans step: onExit'
+    self.__parent.onExit(goingTo, transitionType) 
+
+  def updateWidgetFromParameters(self, parameterNode):
+    baselineVolumeID = parameterNode.GetParameter('baselineVolumeID')
+    followupVolumeID = parameterNode.GetParameter('followupVolumeID')
+    if baselineVolumeID != None:
+      self.__baselineVolumeSelector.setCurrentNode(slicer.util.getNode(baselineVolumeID))
+    if followupVolumeID != None:
+      self.__followupVolumeSelector.setCurrentNode(slicer.util.getNode(followupVolumeID))

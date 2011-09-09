@@ -24,6 +24,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
   def createUserInterface( self ):
     '''
     '''
+    print 'DefineROI create interface'
     self.__layout = self.__parent.createUserInterface()
 
     roiLabel = qt.QLabel( 'Select ROI:' )
@@ -49,6 +50,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     # initialize VR stuff
     self.__vrLogic = slicer.modules.volumerendering.logic()
+
+    updateWidgetFromParameters(self.parameterNode())
 
   def onROIChanged(self):
     roi = self.__roiSelector.currentNode()
@@ -214,6 +217,11 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     print 'ChangeTrackerDefineROIStep: onExit'
     if self.__roi != None:
       self.__roi.RemoveObserver(self.__roiObserverTag)
-    self.__vrDisplayNode.VisibilityOff()
-    self.__roi.VisibleOff()
+      self.__roi.VisibleOff()
+    if self.__vrDisplayNode != None:
+      self.__vrDisplayNode.VisibilityOff()
     super(ChangeTrackerDefineROIStep, self).onExit(goingTo, transitionType)
+
+  def updateWidgetFromParameters(self, parameterNode):
+    self.__roi = slicer.mrmlScene.GetNodeByID(parameterNode.GetParameter('roiID'))
+    self.onROIChanged()

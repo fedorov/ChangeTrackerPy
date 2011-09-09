@@ -19,13 +19,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     self.__layout = self.__parent.createUserInterface()
 
-    # add radio box group
-    roiLabel = qt.QLabel( 'Select segmentation:' )
-    self.__roiSelector = slicer.qMRMLNodeComboBox()
-#    self.__roiSelector.setNodeTyes('vtkMRMLROIAnnotationNode')
-    self.__roiSelector.toolTip = "Choose the ROI segmentation"
-
-    # self.__layout.addRow( roiLabel, self.__roiSelector )
+    
 
   def validate( self, desiredBranchId ):
     '''
@@ -76,3 +70,5 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
       appLogic = slicer.app.mrmlApplicationLogic()
       appLogic.PropagateVolumeSelection()
+
+      super(ChangeTrackerReportROIStep, self).onEntry(comingFrom, transitionType)
