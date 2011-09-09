@@ -51,7 +51,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # initialize VR stuff
     self.__vrLogic = slicer.modules.volumerendering.logic()
 
-    updateWidgetFromParameters(self.parameterNode())
+    # self.updateWidgetFromParameters(self.parameterNode())
 
   def onROIChanged(self):
     roi = self.__roiSelector.currentNode()
@@ -173,7 +173,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     self.__parent.validate( desiredBranchId )
     roi = self.__roiSelector.currentNode()
     if roi != None:
-      print 'ROI: ',roi
       pNode = self.parameterNode()
       pNode.SetParameter('roiID',roi.GetID())
       # print 'ROI ID: ', roi.GetID()

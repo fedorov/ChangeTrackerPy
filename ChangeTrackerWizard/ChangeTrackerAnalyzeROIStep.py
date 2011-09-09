@@ -114,13 +114,15 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       self.__parent.validationFailed(desiredBranchId, "At least one metric should be selected to proceed to the next step!")
 
   def onEntry(self, comingFrom, transitionType):
+    Helper.Info('Analuze step: on Entry')
     super(ChangeTrackerAnalyzeROIStep, self).onEntry(comingFrom, transitionType)
 
   def onExit(self, goingTo, transitionType):
     '''
     Do the processing for this step here
     '''
-    self.__parent.onExit(goingTo, transitionType)
+    Helper.Info('Analuze step: onExit()')
+    super(ChangeTrackerAnalyzeROIStep, self).onExit(goingTo, transitionType)
 
     self.updateParametersFromWidget()
 
@@ -145,7 +147,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # do we have a transform node?
     followupTransform = self.__transformSelector.currentNode()
-    print 'Followup transform is', followupTransform
     if followupTransform != None:
       pNode.SetParameter('followupTransformID', followupTransform.GetID())
     else:

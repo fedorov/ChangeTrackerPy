@@ -3,6 +3,11 @@ from __main__ import qt, ctk
 from ChangeTrackerStep import *
 from Helper import *
 
+'''
+TODO:
+  add advanced option to specify segmentation
+'''
+
 class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
   def __init__( self, stepid ):

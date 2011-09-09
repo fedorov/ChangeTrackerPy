@@ -3,6 +3,8 @@ from __main__ import qt, ctk
 from ChangeTrackerStep import *
 from Helper import *
 
+import string
+
 class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
   def __init__( self, stepid ):
@@ -17,10 +19,12 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     '''
 #    self.buttonBoxHints = self.ButtonBoxHidden
 
+    print 'Creating user interface for last step!'
     self.__layout = self.__parent.createUserInterface()
 
+    self.__metricsTabs = qt.QTabWidget()
+    self.__layout.addRow(self.__metricsTabs)
     
-
   def validate( self, desiredBranchId ):
     '''
     '''
@@ -29,6 +33,31 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     self.__parent.validationSucceeded(desiredBranchId)
 
   def onEntry(self, comingFrom, transitionType):
+    super(ChangeTrackerReportROIStep, self).onEntry(comingFrom, transitionType)
+
+    pNode = self.parameterNode()
+    Helper.Info('Report step: onEntry')
+    # create the tabs
+    self.__metricsTabs.clear()
+    metrics = pNode.GetParameter('metrics')
+    self.__metricTabsList = {}
+
+    print 'Metrics list: ', metrics
+
+    for m in string.split(metrics, ','):
+      print 'Adding tab for metric ',m
+      metricWidget = qt.QWidget()
+      metricLayout = qt.QFormLayout(metricWidget)
+      textWidget = qt.QTextEdit()
+      textWidget.setPlainText(1)
+      textWidget.setReadOnly(1)
+      textWidget.setText('This is the widget for\nMetric'+m+'\n!!!')
+      metricLayout.addRow(textWidget)
+      self.__metricsTabs.addTab(metricWidget, m)
+      self.__metricTabsList[m] = textWidget
+    print 'Creating user interface for last step -- DONE!'
+
+
     # change the layout to Compare
     lm = slicer.app.layoutManager()
     lm.setLayout(12)
@@ -71,4 +100,3 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       appLogic = slicer.app.mrmlApplicationLogic()
       appLogic.PropagateVolumeSelection()
 
-      super(ChangeTrackerReportROIStep, self).onEntry(comingFrom, transitionType)
