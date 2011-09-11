@@ -121,12 +121,14 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     '''
     Do the processing for this step here
     '''
-    Helper.Info('Analuze step: onExit()')
-    super(ChangeTrackerAnalyzeROIStep, self).onExit(goingTo, transitionType)
+    Helper.Info('Analyze step: entering onExit()')
 
     self.updateParametersFromWidget()
 
     self.doStepProcessing()
+    Helper.Info('Analyze step: leaving onExit()')
+    
+    super(ChangeTrackerAnalyzeROIStep, self).onExit(goingTo, transitionType)
 
   def updateWidgetFromParameters(self):
     pNode = self.parametersNode()
@@ -151,6 +153,8 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       pNode.SetParameter('followupTransformID', followupTransform.GetID())
     else:
       pNode.SetParameter('followupTransformID', '')
+
+    Helper.Info('Update parametersfromwidget complete, metrics are '+metricsList)
 
   def doStepProcessing(self):
     print 'Step processing'

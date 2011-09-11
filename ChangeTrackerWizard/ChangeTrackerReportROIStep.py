@@ -33,6 +33,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     self.__parent.validationSucceeded(desiredBranchId)
 
   def onEntry(self, comingFrom, transitionType):
+    Helper.Info('Report step: entering onEntry()')
     super(ChangeTrackerReportROIStep, self).onEntry(comingFrom, transitionType)
 
     pNode = self.parameterNode()
@@ -100,3 +101,4 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       appLogic = slicer.app.mrmlApplicationLogic()
       appLogic.PropagateVolumeSelection()
 
+    Helper.Info('Report step: leaving onEntry()')
