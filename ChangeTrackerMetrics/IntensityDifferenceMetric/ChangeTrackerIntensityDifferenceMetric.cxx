@@ -307,7 +307,12 @@ int main( int argc, char ** argv )
   std::cout << "cdNoSeg: growthCnt = " << cdNoSegGrowthCnt << ", shrinkCnt = " << cdNoSegShrinkCnt << std::endl;
   std::cout << "cdSeg: growthCnt = " << cdSegGrowthCnt << ", shrinkCnt = " << cdSegShrinkCnt << std::endl;
 
-  SaveImage(cdNoSeg, "/tmp/cdNoSegResult.nrrd");
+  std::ofstream report(reportFileName.c_str());
+  report << "Growth: " << cdSegGrowthCnt*pixelVol << " mm^3 (" << cdSegGrowthCnt << " voxels)" << std::endl;
+  report << "Shrinkage: " << cdSegShrinkCnt*pixelVol << " mm^3 (" << cdSegShrinkCnt << " voxels)" << std::endl;
+  report << "Total: " << (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol << " mm^3 (" << cdSegGrowthCnt-cdSegShrinkCnt << " voxels)" << std::endl;
+ 
+//  SaveImage(cdNoSeg, "/tmp/cdNoSegResult.nrrd");
   SaveImage(cdSeg, outFilename);
 
   return EXIT_SUCCESS;

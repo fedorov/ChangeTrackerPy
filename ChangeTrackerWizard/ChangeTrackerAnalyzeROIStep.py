@@ -26,7 +26,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # find all metrics in the plugins directory. The assumption is that all
     # metrics are named as ChangeTracker*Metric
-    metricsSearchPattern = slicer.app.slicerHome+'/plugins/ChangeTracker*Metric'
+    metricsSearchPattern = slicer.app.slicerHome+os.sep+'plugins'+os.sep+'ChangeTracker*Metric'
     changeTrackerMetrics = glob.glob(metricsSearchPattern)
 
     # if len(changeTrackerMetrics) == 0:
@@ -241,7 +241,8 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     if metricsList == '':
       Helper.Error('doStepProcessing(): metrics list is empty!')
       
-    resultsList = ''
+    resultVolumesList = ''
+    resultReportsList = ''
 
     moduleManager = slicer.app.moduleManager()
     for m in string.split(metricsList,','):
@@ -252,21 +253,27 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
         
       vl = slicer.modules.volumes.logic()
       outputVolume = vl.CreateLabelVolume(slicer.mrmlScene, baselineVolume, 'changesVolume_'+m)
+      outputReport =  slicer.app.temporaryPath+os.sep+pluginName+'_report.txt'
+
       parameters['outputVolume'] = outputVolume.GetID()
+      parameters['reportFileName'] = outputReport
 
       plugin = moduleManager.module(pluginName)
       if plugin != None:
-        # QUESTION: how can I get the pointer to the module object based on
-        # the module name?
         cliNode = None
         Helper.Info('About to run '+m+' metric!')
         cliNode = slicer.cli.run(plugin, cliNode, parameters, 1)
         
-      if resultsList != '':
-          resultsList = resultsList + ','
-      resultsList = resultsList + outputVolume.GetID()
+      if resultVolumesList != '':
+          resultVolumesList = resultVolumesList + ','
+      resultVolumesList = resultVolumesList + outputVolume.GetID()
 
-    pNode.SetParameter('results', resultsList)
+      if resultReportsList != '':
+          resultReportsList = resultReportsList + ','
+      resultReportsList = resultReportsList + outputVolume.GetID()
+
+    pNode.SetParameter('resultVolumes', resultVolumesList)
+    pNode.SetParameter('resultReports', resultReportsList)
 
     Helper.Info('Selected metrics: '+pNode.GetParameter('metrics'))
-    Helper.Info('Metrics processing results:'+pNode.GetParameter('results'))
+    Helper.Info('Metrics processing results:'+pNode.GetParameter('resultVolumes'))
