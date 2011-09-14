@@ -67,7 +67,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       textWidget.setPlainText(1)
       textWidget.setReadOnly(1)
 
-      self.__metricsVolumes[m] = slicer.mrmlScene.GetNodeByID(metricsVolumesIDs[i])
+      self.__metricsVolumes[m] = metricsVolumesIDs[i]
       reportFileName = metricsReports[i]
 
       reportText = ''
@@ -92,44 +92,54 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     pNode = self.parameterNode()
 
+    # use GetLayoutName() to identify the corresponding slice node and slice
+    # composite node
+
     # find the compare nodes and initialize them as we wish
-    sliceNodesCollection = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceNode')
-    sliceCompositeNodesCollection = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceCompositeNode')
-    for s in range(0,sliceNodesCollection.GetNumberOfItems()):
-      sNode = sliceNodesCollection.GetItemAsObject(s)
+    sliceNodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceNode')
+    sliceCompositeNodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceCompositeNode')
+
+    # setup slice nodes
+    for s in range(0,sliceNodes.GetNumberOfItems()):
+      sNode = sliceNodes.GetItemAsObject(s)
       thisLayoutName = sNode.GetLayoutName()
       # TODO: check they should have the same layout name!
-      if thisLayoutName.find('Compare1') == 0:
+      if thisLayoutName.find('Compare') == 0:
         sNode.SetLayoutGrid(1,6)
-        scNode = sliceCompositeNodesCollection.GetItemAsObject(s)
+
+    # setup slice composite nodes
+    for s in range(0,sliceCompositeNodes.GetNumberOfItems()):
+      scNode = sliceCompositeNodes.GetItemAsObject(s)
+      thisLayoutName = scNode.GetLayoutName()
+      if thisLayoutName == 'Compare1':
         scNode.SetBackgroundVolumeID(pNode.GetParameter('croppedBaselineVolumeID'))
         scNode.SetForegroundVolumeID('')
         scNode.SetLabelVolumeID('')
         scNode.SetLinkedControl(1)
-
-      # TODO: save ROI segmentation in pNode, set here for baseline as
-      # outline?
-      if thisLayoutName.find('Compare2') == 0:
-        sNode.SetLayoutGrid(1,6)
-        scNode = sliceCompositeNodesCollection.GetItemAsObject(s)
+      if thisLayoutName == 'Compare2':
         scNode.SetBackgroundVolumeID(pNode.GetParameter('croppedFollowupVolumeID'))
         scNode.SetForegroundVolumeID('')
         scNode.SetLabelVolumeID('')
         scNode.SetLinkedControl(1)
 
-    # link views
-    for s in range(0,sliceNodesCollection.GetNumberOfItems()):
-      sNode = sliceNodesCollection.GetItemAsObject(s)
-      thisLayoutName = sNode.GetLayoutName()
-      if thisLayoutName.find('Compare') == 0:
-        scNode = sliceCompositeNodesCollection.GetItemAsObject(s)
-        scNode.SetLinkedControl(1)
-
-      appLogic = slicer.app.mrmlApplicationLogic()
-      appLogic.PropagateVolumeSelection()
-
     Helper.Info('Report step: leaving onEntry()')
 
   def onTabChanged(self, index):
-    print 'Tab changed! Current tab title: ', self.__metricsTabs.tabText(index)
 
+    metricName = self.__metricsTabs.tabText(index)
+    print 'User selected metric ', metricName,
+    print ' corresponding results volume: ', self.__metricsVolumes[metricName]
+    sliceCompositeNodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceCompositeNode')
+
+    for s in range(0,sliceCompositeNodes.GetNumberOfItems()):
+      scNode = sliceCompositeNodes.GetItemAsObject(s)
+      thisLayoutName = scNode.GetLayoutName()
+      # TODO: check they should have the same layout name!
+      if thisLayoutName == 'Compare1':
+        scNode.SetLinkedControl(0)
+        scNode.SetLabelVolumeID(self.__metricsVolumes[metricName])
+        scNode.SetLinkedControl(1)
+      if thisLayoutName == 'Compare2':
+        scNode.SetLinkedControl(0)
+        scNode.SetLabelVolumeID(self.__metricsVolumes[metricName])
+        scNode.SetLinkedControl(1)
