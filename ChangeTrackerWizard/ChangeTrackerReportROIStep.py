@@ -42,20 +42,47 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     self.__metricsTabs.clear()
     metrics = pNode.GetParameter('metrics')
     self.__metricTabsList = {}
+    self.__metricsVolumes = {}
 
     print 'Metrics list: ', metrics
+    metricsReports = string.split(pNode.GetParameter('resultReports'),',')
+    metricsVolumesIDs = string.split(pNode.GetParameter('resultVolumes'),',')
 
-    for m in string.split(metrics, ','):
+    i = 0
+
+    metricsList = string.split(metrics,',')
+    print 'Total metrics: ',len(metricsList)
+
+    print 'Metrics volumes ids = ', metricsVolumesIDs
+    print 'Metrics = ', metricsList
+
+    if len(metricsVolumesIDs) != len(metricsList):
+      Helper.Error('Missing metric processing results!')
+
+    for m in metricsList:
       print 'Adding tab for metric ',m
       metricWidget = qt.QWidget()
       metricLayout = qt.QFormLayout(metricWidget)
       textWidget = qt.QTextEdit()
       textWidget.setPlainText(1)
       textWidget.setReadOnly(1)
-      textWidget.setText('This is the widget for\nMetric'+m+'\n!!!')
+
+      self.__metricsVolumes[m] = slicer.mrmlScene.GetNodeByID(metricsVolumesIDs[i])
+      reportFileName = metricsReports[i]
+
+      reportText = ''
+      with open(reportFileName,'r') as f:
+        reportText = f.read()
+      f.closed
+
+      textWidget.setText(reportText)
       metricLayout.addRow(textWidget)
       self.__metricsTabs.addTab(metricWidget, m)
       self.__metricTabsList[m] = textWidget
+      print 'Finished preparing for ', m
+      i = i+1
+
+    self.__metricsTabs.connect("currentChanged(int)", self.onTabChanged)
     print 'Creating user interface for last step -- DONE!'
 
 
@@ -102,3 +129,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       appLogic.PropagateVolumeSelection()
 
     Helper.Info('Report step: leaving onEntry()')
+
+  def onTabChanged(self, index):
+    print 'Tab changed! Current tab title: ', self.__metricsTabs.tabText(index)
+

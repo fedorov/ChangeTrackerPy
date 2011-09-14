@@ -270,7 +270,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
       if resultReportsList != '':
           resultReportsList = resultReportsList + ','
-      resultReportsList = resultReportsList + outputVolume.GetID()
+      resultReportsList = resultReportsList + outputReport
 
     pNode.SetParameter('resultVolumes', resultVolumesList)
     pNode.SetParameter('resultReports', resultReportsList)
