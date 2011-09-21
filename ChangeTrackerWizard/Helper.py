@@ -80,7 +80,7 @@ class Helper( object ):
 
   @staticmethod
   def SetBgFgVolumes(bg, fg):
-    appLogic = slicer.app.mrmlApplicationLogic()
+    appLogic = slicer.app.applicationLogic()
     selectionNode = appLogic.GetSelectionNode()
     selectionNode.SetReferenceActiveVolumeID(bg)
     selectionNode.SetReferenceSecondaryVolumeID(fg)
@@ -88,7 +88,7 @@ class Helper( object ):
 
   @staticmethod
   def SetLabelVolume(lb):
-    appLogic = slicer.app.mrmlApplicationLogic()
+    appLogic = slicer.app.applicationLogic()
     selectionNode = appLogic.GetSelectionNode()
     selectionNode.SetReferenceActiveLabelVolumeID(lb)
     appLogic.PropagateVolumeSelection()
