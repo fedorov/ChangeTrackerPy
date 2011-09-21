@@ -87,6 +87,9 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__parent.validate( desiredBranchId )
     self.__parent.validationSucceeded(desiredBranchId)
 
+  def onExit(self, goingTo, transitionType):
+    self.__vrDisplayNode.VisibilityOff()
+
   def onEntry(self, comingFrom, transitionType):
     '''
     Resample the baseline volume using ROI
