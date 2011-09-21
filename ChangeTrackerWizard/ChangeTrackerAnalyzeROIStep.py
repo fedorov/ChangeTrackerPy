@@ -263,6 +263,13 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
         cliNode = None
         Helper.Info('About to run '+m+' metric!')
         cliNode = slicer.cli.run(plugin, cliNode, parameters, 1)
+
+      '''
+      TODO: error checking for CLI!
+      assign the proper color table to the results volume
+      '''
+      labelsColorNode = slicer.modules.colors.logic().GetColorTableNodeID(10)
+      outputVolume.GetDisplayNode().SetAndObserveColorNodeID(labelsColorNode)
         
       if resultVolumesList != '':
           resultVolumesList = resultVolumesList + ','
