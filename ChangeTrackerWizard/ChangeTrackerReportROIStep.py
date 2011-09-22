@@ -12,6 +12,10 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     self.setName( '5. ROI Analysis Results' )
     self.setDescription( '' )
 
+    self.__vrDisplayNode = None
+    self.__vrOpacityMap = None
+    self.__vrLogic = slicer.modules.volumerendering.logic()
+
     self.__parent = super( ChangeTrackerReportROIStep, self )
 
   def createUserInterface( self ):
@@ -122,6 +126,22 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
         scNode.SetLabelVolumeID('')
         scNode.SetLinkedControl(1)
 
+
+    '''
+    setup for volume rendering
+    '''
+    if self.__vrDisplayNode == None:
+      print 'Creating display node in the last step'
+      self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
+      viewNode = slicer.util.getNode('vtkMRMLViewNode1')
+      self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
+      self.__vrDisplayNode.SetCurrentVolumeMapper(2)
+
+    '''
+    trigger volume rendering and label update
+    '''
+    self.onTabChanged(0)
+
     Helper.Info('Report step: leaving onEntry()')
 
   def onTabChanged(self, index):
@@ -143,3 +163,41 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
         scNode.SetLinkedControl(0)
         scNode.SetLabelVolumeID(self.__metricsVolumes[metricName])
         scNode.SetLinkedControl(1)
+    
+    self.showChangeMapVolumeRendering(self.__metricsVolumes[metricName])
+
+  def showChangeMapVolumeRendering(self, labelID):
+    '''
+    volume render change detection results
+    '''
+    
+    print 'Changes volume to render: ',labelID
+    labelVolume = slicer.mrmlScene.GetNodeByID(labelID)
+
+    self.__vrDisplayNode.SetAndObserveVolumeNodeID(labelID)
+    self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, labelVolume)
+
+    print 'Display node id:',self.__vrDisplayNode.GetID()
+
+    vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
+    vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
+    
+    # setup color transfer function once
+    vrColorMap.RemoveAllPoints()
+    vrColorMap.AddRGBPoint(11, 0, 0, 0) 
+    vrColorMap.AddRGBPoint(12, 0, 1, 0) 
+    vrColorMap.AddRGBPoint(12.1, 0, 0, 0) 
+    vrColorMap.AddRGBPoint(13.9, 0, 0, 0) 
+    vrColorMap.AddRGBPoint(14, 1, 0, 0) 
+    vrColorMap.AddRGBPoint(15, 0, 0, 0) 
+
+    vrOpacityMap.RemoveAllPoints()
+    vrOpacityMap.AddPoint(0,0)
+    vrOpacityMap.AddPoint(11,0)
+    vrOpacityMap.AddPoint(12,1)
+    vrOpacityMap.AddPoint(12.1,0)
+    vrOpacityMap.AddPoint(13.9,0)
+    vrOpacityMap.AddPoint(14,1)
+    vrOpacityMap.AddPoint(15,0)
+
+    self.__vrDisplayNode.VisibilityOn()
