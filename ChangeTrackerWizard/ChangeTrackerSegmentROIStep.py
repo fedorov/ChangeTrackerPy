@@ -30,6 +30,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
   def createUserInterface( self ):
     '''
     '''
+    print 'SegmentROI create interface'
 #    self.buttonBoxHints = self.ButtonBoxHidden
 
     self.__layout = self.__parent.createUserInterface()
@@ -90,38 +91,20 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
   def onExit(self, goingTo, transitionType):
     self.__vrDisplayNode.VisibilityOff()
 
+    super(ChangeTrackerSegmentROIStep, self).onExit(goingTo, transitionType)
+
   def onEntry(self, comingFrom, transitionType):
     '''
     Resample the baseline volume using ROI
 
     TODO: if coming from the next step, do not resample!
+
+    TODO: this should go to onExit() in the previous step!
     '''
-    pNode = self.parameterNode()
-    baselineVolumeID = pNode.GetParameter('baselineVolumeID')
-    baselineVolume = slicer.mrmlScene.GetNodeByID(baselineVolumeID)
-
-    cropVolumeNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCropVolumeParametersNode')
-    cropVolumeNode.SetScene(slicer.mrmlScene)
-    cropVolumeNode.SetName('ChangeTracker_CropVolume_node')
-    cropVolumeNode.SetIsotropicResampling(True)
-    cropVolumeNode.SetSpacingScalingConst(0.5)
-    slicer.mrmlScene.AddNode(cropVolumeNode)
-    # TODO hide from MRML tree
-
-    cropVolumeNode.SetAndObserveInputVolumeNodeID(pNode.GetParameter('baselineVolumeID'))
-    cropVolumeNode.SetAndObserveROINodeID(pNode.GetParameter('roiID'))
-    # cropVolumeNode.SetAndObserveOutputVolumeNodeID(outputVolume.GetID())
-
-    cropVolumeLogic = slicer.modules.cropvolume.logic()
-    cropVolumeLogic.Apply(cropVolumeNode)
-
-    # TODO: cropvolume error checking
-    outputVolume = slicer.mrmlScene.GetNodeByID(cropVolumeNode.GetOutputVolumeNodeID())
-    outputVolume.SetName("baselineROI")
-    pNode.SetParameter('croppedBaselineVolumeID',cropVolumeNode.GetOutputVolumeNodeID())
-
-    Helper.SetBgFgVolumes(pNode.GetParameter('croppedBaselineVolumeID'),'')
     super(ChangeTrackerSegmentROIStep, self).onEntry(comingFrom, transitionType)
+
+    pNode = self.parameterNode()
+    Helper.SetBgFgVolumes(pNode.GetParameter('croppedBaselineVolumeID'),'')
 
     # initilize threshold selector based on the ROI contents
     roiVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
@@ -183,3 +166,4 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__threshRange.maximumValue = roiImageRange[1]
 
     self.onThresholdChanged()
+

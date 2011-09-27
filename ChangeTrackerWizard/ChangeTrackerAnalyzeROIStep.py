@@ -255,6 +255,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       outputVolume = vl.CreateLabelVolume(slicer.mrmlScene, baselineVolume, 'changesVolume_'+m)
       outputReport =  slicer.app.temporaryPath+os.sep+pluginName+'_report.txt'
 
+      parameters["tmpDirectory"] = slicer.app.temporaryPath
       parameters['outputVolume'] = outputVolume.GetID()
       parameters['reportFileName'] = outputReport
 

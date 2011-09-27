@@ -172,16 +172,14 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     print 'ChangeTrackerDefineROIStep: validate'
     self.__parent.validate( desiredBranchId )
     roi = self.__roiSelector.currentNode()
-    if roi != None:
-      pNode = self.parameterNode()
-      pNode.SetParameter('roiID',roi.GetID())
-      # print 'ROI ID: ', roi.GetID()
-      # TODO: verify that ROI is within the baseline volume?
-      self.__parent.validationSucceeded(desiredBranchId)
-    else:
+    if roi == None:
       self.__parent.validationFailed(desiredBranchId, 'Error', 'Please define ROI!')
+      
+    self.__parent.validationSucceeded(desiredBranchId)
 
   def onEntry(self,comingFrom,transitionType):
+    super(ChangeTrackerDefineROIStep, self).onEntry(comingFrom, transitionType)
+
     pNode = self.parameterNode()
     Helper.SetBgFgVolumes(pNode.GetParameter('baselineVolumeID'),pNode.GetParameter('followupVolumeID'))
 
@@ -207,20 +205,60 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     dm.SetElement(2,2,abs(dm.GetElement(2,2)))
     self.__roiTransformNode.SetAndObserveMatrixTransformToParent(dm)
 
+    # get the roiNode from parameters node, if it exists, and initialize the
+    # GUI
+    self.updateWidgetFromParameterNode(pNode)
+
     if self.__roi != None:
       self.__roi.VisibleOn()
 
-    super(ChangeTrackerDefineROIStep, self).onEntry(comingFrom, transitionType)
 
   def onExit(self, goingTo, transitionType):
+    # TODO: add storeWidgetStateToParameterNode() -- move all pNode-related stuff
+    # there?
     print 'ChangeTrackerDefineROIStep: onExit'
     if self.__roi != None:
       self.__roi.RemoveObserver(self.__roiObserverTag)
       self.__roi.VisibleOff()
     if self.__vrDisplayNode != None:
       self.__vrDisplayNode.VisibilityOff()
+
+    '''
+    prepare roi image for the next step
+    '''
+    pNode = self.parameterNode()
+    
+    pNode.SetParameter('roiNodeID', self.__roiSelector.currentNode().GetID())
+    baselineVolumeID = pNode.GetParameter('baselineVolumeID')
+    baselineVolume = slicer.mrmlScene.GetNodeByID(baselineVolumeID)
+
+    cropVolumeNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCropVolumeParametersNode')
+    cropVolumeNode.SetScene(slicer.mrmlScene)
+    cropVolumeNode.SetName('ChangeTracker_CropVolume_node')
+    cropVolumeNode.SetIsotropicResampling(True)
+    cropVolumeNode.SetSpacingScalingConst(0.5)
+    slicer.mrmlScene.AddNode(cropVolumeNode)
+    # TODO hide from MRML tree
+
+    cropVolumeNode.SetAndObserveInputVolumeNodeID(pNode.GetParameter('baselineVolumeID'))
+    cropVolumeNode.SetAndObserveROINodeID(pNode.GetParameter('roiNodeID'))
+    # cropVolumeNode.SetAndObserveOutputVolumeNodeID(outputVolume.GetID())
+
+    cropVolumeLogic = slicer.modules.cropvolume.logic()
+    cropVolumeLogic.Apply(cropVolumeNode)
+
+    # TODO: cropvolume error checking
+    outputVolume = slicer.mrmlScene.GetNodeByID(cropVolumeNode.GetOutputVolumeNodeID())
+    outputVolume.SetName("baselineROI")
+    pNode.SetParameter('croppedBaselineVolumeID',cropVolumeNode.GetOutputVolumeNodeID())
+
+    print 'Cropped baseline volume id: ', cropVolumeNode.GetOutputVolumeNodeID()
+
     super(ChangeTrackerDefineROIStep, self).onExit(goingTo, transitionType)
 
-  def updateWidgetFromParameters(self, parameterNode):
-    self.__roi = slicer.mrmlScene.GetNodeByID(parameterNode.GetParameter('roiID'))
-    self.onROIChanged()
+  def updateWidgetFromParameterNode(self, parameterNode):
+    roiNodeID = parameterNode.GetParameter('roiNodeID')
+    if roiNodeID != '':
+      self.__roi = slicer.mrmlScene.GetNodeByID(roiNodeID)
+      self.__roiSelector.setCurrentNode(self.__roi.GetID())
+      self.onROIChanged()

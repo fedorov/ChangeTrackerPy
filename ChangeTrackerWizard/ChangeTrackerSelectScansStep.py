@@ -78,14 +78,14 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
       self.__parent.validationFailed(desiredBranchId, 'Error','Please select both baseline and followup volumes!')
 
   def onEntry(self, comingFrom, transitionType):
-    self.__parent.onEntry(comingFrom, transitionType)
     print 'SelectScans step: onEntry'
+    super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
     #self.updateWidgetFromParameters(self.parameterNode())
     #super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
 
   def onExit(self, goingTo, transitionType):
     print 'SelectScans step: onExit'
-    self.__parent.onExit(goingTo, transitionType) 
+    super(ChangeTrackerSelectScansStep, self).onExit(goingTo, transitionType) 
 
   def updateWidgetFromParameters(self, parameterNode):
     baselineVolumeID = parameterNode.GetParameter('baselineVolumeID')
