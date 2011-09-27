@@ -307,10 +307,17 @@ int main( int argc, char ** argv )
   std::cout << "cdNoSeg: growthCnt = " << cdNoSegGrowthCnt << ", shrinkCnt = " << cdNoSegShrinkCnt << std::endl;
   std::cout << "cdSeg: growthCnt = " << cdSegGrowthCnt << ", shrinkCnt = " << cdSegShrinkCnt << std::endl;
 
-  std::ofstream report(reportFileName.c_str());
-  report << "Growth: " << cdSegGrowthCnt*pixelVol << " mm^3 (" << cdSegGrowthCnt << " voxels)" << std::endl;
-  report << "Shrinkage: " << cdSegShrinkCnt*pixelVol << " mm^3 (" << cdSegShrinkCnt << " voxels)" << std::endl;
-  report << "Total: " << (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol << " mm^3 (" << cdSegGrowthCnt-cdSegShrinkCnt << " voxels)" << std::endl;
+  if(reportFileName != ""){
+    std::ofstream report(reportFileName.c_str());
+    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#ff0000;\">Growth</span>: " << cdSegGrowthCnt*pixelVol << " mm<sup>3 </sup></strong>(" << cdSegGrowthCnt << " pixels)</span></p>";
+    report << "<p><span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#008000;\">Shrinkage</span>: " << cdSegShrinkCnt*pixelVol << " mm<sup>3&nbsp;</sup></strong>(" << cdSegShrinkCnt << " pixels)</span></p><p>";
+    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong>Total: " <<  (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol << " mm<sup>3&nbsp;</sup></strong>(" << cdSegGrowthCnt-cdSegShrinkCnt << " pixels)</span></p>";
+    /*
+    report << "Growth: " << cdSegGrowthCnt*pixelVol << " mm^3 (" << cdSegGrowthCnt << " voxels)" << std::endl;
+    report << "Shrinkage: " << cdSegShrinkCnt*pixelVol << " mm^3 (" << cdSegShrinkCnt << " voxels)" << std::endl;
+    report << "Total: " << (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol << " mm^3 (" << cdSegGrowthCnt-cdSegShrinkCnt << " voxels)" << std::endl;
+    */
+  }
  
 //  SaveImage(cdNoSeg, "/tmp/cdNoSegResult.nrrd");
   SaveImage(cdSeg, outFilename);
@@ -348,7 +355,7 @@ void CalculateRegionHistograms(ImageType::Pointer input, ImageType::Pointer mask
   minmax->SetInput(diff);
   minmax->Update();
 
-  std::cerr << "Min: " << minmax->GetMinimum() << ", Max: " << minmax->GetMaximum() << std::endl;
+  std::cout << "Min: " << minmax->GetMinimum() << ", Max: " << minmax->GetMaximum() << std::endl;
   cumHistPos.resize(minmax->GetMaximum()+1);
   cumHistNeg.resize(abs(minmax->GetMinimum())+1);
   histPos.resize(minmax->GetMaximum()+1);
