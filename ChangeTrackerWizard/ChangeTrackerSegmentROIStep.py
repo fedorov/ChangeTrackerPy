@@ -3,6 +3,8 @@ from __main__ import qt, ctk
 from ChangeTrackerStep import *
 from Helper import *
 
+import string
+
 '''
 TODO:
   add advanced option to specify segmentation
@@ -91,6 +93,9 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
   def onExit(self, goingTo, transitionType):
     self.__vrDisplayNode.VisibilityOff()
 
+    pNode = self.parameterNode()
+    pNode.SetParameter('thresholdRange', str(self.__threshRange.minimumValue)+','+str(self.__threshRange.maximumValue))
+
     super(ChangeTrackerSegmentROIStep, self).onExit(goingTo, transitionType)
 
   def onEntry(self, comingFrom, transitionType):
@@ -167,3 +172,13 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
     self.onThresholdChanged()
 
+    
+    self.updateWidgetFromParameters(pNode)
+
+  def updateWidgetFromParameters(self, pNode):
+    thresholdRange = pNode.GetParameter('thresholdRange')
+    if thresholdRange != '':
+      rangeArray = string.split(thresholdRange, ',')
+      self.__threshRange.minimumValue = float(rangeArray[0])
+      self.__threshRange.maximumValue = float(rangeArray[1])
+      self.onThresholdChanged()

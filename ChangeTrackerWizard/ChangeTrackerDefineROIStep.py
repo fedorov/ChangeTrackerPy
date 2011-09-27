@@ -91,8 +91,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       # TODO: update opacity function based on ROI content
       # self.__vrOpacityMap.RemoveAllPoints()
 
-      if self.__roi != None:
-        self.__roi.RemoveObserver(self.processROIEvents)
+      if self.__roiObserverTag != None:
+        self.__roi.RemoveObserver(self.__roiObserverTag)
 
       self.__roi = slicer.mrmlScene.GetNodeByID(roi.GetID())
       self.__roiObserverTag = self.__roi.AddObserver('ModifiedEvent', self.processROIEvents)
@@ -100,6 +100,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       roi.SetInteractiveMode(1)
 
       self.__roiWidget.setMRMLAnnotationROINode(roi)
+      self.__roi.VisibleOn()
      
   def processROIEvents(self,node,event):
     # get the range of intensities inside the ROI
@@ -180,6 +181,9 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
   def onEntry(self,comingFrom,transitionType):
     super(ChangeTrackerDefineROIStep, self).onEntry(comingFrom, transitionType)
 
+    # setup the interface
+    lm = slicer.app.layoutManager()
+    lm.setLayout(3)
     pNode = self.parameterNode()
     Helper.SetBgFgVolumes(pNode.GetParameter('baselineVolumeID'),pNode.GetParameter('followupVolumeID'))
 
@@ -212,7 +216,9 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     if self.__roi != None:
       self.__roi.VisibleOn()
 
+    # setup interface
 
+# setup interface
   def onExit(self, goingTo, transitionType):
     # TODO: add storeWidgetStateToParameterNode() -- move all pNode-related stuff
     # there?
@@ -260,5 +266,5 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     roiNodeID = parameterNode.GetParameter('roiNodeID')
     if roiNodeID != '':
       self.__roi = slicer.mrmlScene.GetNodeByID(roiNodeID)
-      self.__roiSelector.setCurrentNode(self.__roi.GetID())
+      self.__roiSelector.setCurrentNode(Helper.getNodeByID(self.__roi.GetID()))
       self.onROIChanged()

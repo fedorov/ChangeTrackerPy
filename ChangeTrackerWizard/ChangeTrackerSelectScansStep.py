@@ -68,9 +68,6 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
         pNode.SetParameter('baselineVolumeID', baselineID)
         pNode.SetParameter('followupVolumeID', followupID)
         
-        lm = slicer.app.layoutManager()
-        lm.setLayout(3)
-        # TODO: initialize Bg/Fg, fit volumes to slice viewer
         self.__parent.validationSucceeded(desiredBranchId)
       else:
         self.__parent.validationFailed(desiredBranchId, 'Error','Please select distinctive baseline and followup volumes!')
@@ -80,7 +77,7 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
   def onEntry(self, comingFrom, transitionType):
     print 'SelectScans step: onEntry'
     super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
-    #self.updateWidgetFromParameters(self.parameterNode())
+    self.updateWidgetFromParameters(self.parameterNode())
     #super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
 
   def onExit(self, goingTo, transitionType):
@@ -91,6 +88,6 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
     baselineVolumeID = parameterNode.GetParameter('baselineVolumeID')
     followupVolumeID = parameterNode.GetParameter('followupVolumeID')
     if baselineVolumeID != None:
-      self.__baselineVolumeSelector.setCurrentNode(slicer.util.getNode(baselineVolumeID))
+      self.__baselineVolumeSelector.setCurrentNode(Helper.getNodeByID(baselineVolumeID))
     if followupVolumeID != None:
-      self.__followupVolumeSelector.setCurrentNode(slicer.util.getNode(followupVolumeID))
+      self.__followupVolumeSelector.setCurrentNode(Helper.getNodeByID(followupVolumeID))
