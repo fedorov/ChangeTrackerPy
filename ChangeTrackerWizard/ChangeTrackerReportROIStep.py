@@ -68,7 +68,6 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       metricWidget = qt.QWidget()
       metricLayout = qt.QFormLayout(metricWidget)
       textWidget = qt.QTextEdit()
-      textWidget.setPlainText(1)
       textWidget.setReadOnly(1)
 
       self.__metricsVolumes[m] = metricsVolumesIDs[i]
@@ -93,6 +92,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     # change the layout to Compare
     lm = slicer.app.layoutManager()
     lm.setLayout(12)
+    lm.setLayoutNumberOfCompareViewRows(2)
 
     pNode = self.parameterNode()
 
