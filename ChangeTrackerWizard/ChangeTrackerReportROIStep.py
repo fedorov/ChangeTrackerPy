@@ -185,10 +185,10 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     # setup color transfer function once
     vrColorMap.RemoveAllPoints()
     vrColorMap.AddRGBPoint(11, 0, 0, 0) 
-    vrColorMap.AddRGBPoint(12, 0, 1, 0) 
+    vrColorMap.AddRGBPoint(12, 0.2, 0.8, 0.5) 
     vrColorMap.AddRGBPoint(12.1, 0, 0, 0) 
     vrColorMap.AddRGBPoint(13.9, 0, 0, 0) 
-    vrColorMap.AddRGBPoint(14, 1, 0, 0) 
+    vrColorMap.AddRGBPoint(14, 0.8, 0.2, 0.5) 
     vrColorMap.AddRGBPoint(15, 0, 0, 0) 
 
     vrOpacityMap.RemoveAllPoints()
