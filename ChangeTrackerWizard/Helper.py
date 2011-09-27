@@ -116,4 +116,6 @@ class Helper( object ):
           pass
     return children
 
-
+  @staticmethod
+  def getNodeByID(id):
+    return slicer.mrmlScene.GetNodeByID(id)
