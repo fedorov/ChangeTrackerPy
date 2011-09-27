@@ -26,7 +26,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # find all metrics in the plugins directory. The assumption is that all
     # metrics are named as ChangeTracker*Metric
-    metricsSearchPattern = slicer.app.slicerHome+os.sep+'plugins'+os.sep+'ChangeTracker*Metric'
+    metricsSearchPattern = slicer.app.slicerHome+'/lib/Slicer-4.0/cli-modules/ChangeTracker*Metric'
     changeTrackerMetrics = glob.glob(metricsSearchPattern)
 
     # if len(changeTrackerMetrics) == 0:
