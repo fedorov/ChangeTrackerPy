@@ -1,2 +1,4 @@
 ADD_SUBDIRECTORY(IntensityDifferenceMetric)
-ADD_SUBDIRECTORY(SurfaceTrackingMetric)
+#ADD_SUBDIRECTORY(SurfaceTrackingMetric)
+#ADD_SUBDIRECTORY(DemonsRegistrationJacobianMetric)
+ADD_SUBDIRECTORY(DemonsRegistrationSegmentationMetric)
