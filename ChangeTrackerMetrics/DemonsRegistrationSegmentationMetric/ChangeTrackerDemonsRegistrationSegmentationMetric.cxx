@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     " --referenceVolume " << followupVolume <<
     " --inputVolume " << baselineSegmentationVolume <<
     " --interpolationMode NearestNeighbor " <<
-    " --deformationVolume " << DEMONS_REVERSE_DF_RESULT <<
+    " --deformationVolume " << tmpDirectory << "/" << DEMONS_REVERSE_DF_RESULT <<
     " --outputVolume " << warpedSegmentationFileName;
   std::cout << cmdLine.str() << std::endl;
   system(cmdLine.str().c_str());
@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
   writer->Update();
 
   if(reportFileName != ""){
+    std::cout << "Saving report to " << reportFileName << std::endl;
     ImageType::SpacingType s = changesLabel->GetSpacing();
     float sv = s[0]*s[1]*s[2];
     std::ofstream rep(reportFileName.c_str());
