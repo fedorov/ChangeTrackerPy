@@ -116,6 +116,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
   def onEntry(self, comingFrom, transitionType):
     Helper.Info('Analuze step: on Entry')
     super(ChangeTrackerAnalyzeROIStep, self).onEntry(comingFrom, transitionType)
+    self.updateWidgetFromParameters()
 
   def onExit(self, goingTo, transitionType):
     '''
@@ -131,8 +132,17 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     super(ChangeTrackerAnalyzeROIStep, self).onExit(goingTo, transitionType)
 
   def updateWidgetFromParameters(self):
-    pNode = self.parametersNode()
+    pNode = self.parameterNode()
     # update widget elements
+    metricsList = string.split(pNode.GetParameter('metrics'),',')
+    for mc in self.__metricCheckboxList:
+      m = self.__metricCheckboxList[mc]
+      if m in metricsList:
+        mc.setChecked(1)
+    
+    transformID = pNode.GetParameter('followupTransformID')
+    if transformID != '':
+      self.__transformSelector.setCurrentNode(Helper.getNodeByID(transformID))
     
   def updateParametersFromWidget(self):
     pNode = self.parameterNode()
