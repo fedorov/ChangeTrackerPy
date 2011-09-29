@@ -71,14 +71,9 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       textWidget.setReadOnly(1)
 
       self.__metricsVolumes[m] = metricsVolumesIDs[i]
-      reportFileName = metricsReports[i]
+      currentVolume = Helper.getNodeByID(metricsVolumesIDs[i])
 
-      reportText = ''
-      with open(reportFileName,'r') as f:
-        reportText = f.read()
-      f.closed
-
-      textWidget.setText(reportText)
+      textWidget.setText(currentVolume.GetDescription())
       metricLayout.addRow(textWidget)
       self.__metricsTabs.addTab(metricWidget, m)
       self.__metricTabsList[m] = textWidget

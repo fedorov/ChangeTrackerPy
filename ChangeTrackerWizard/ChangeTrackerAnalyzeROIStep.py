@@ -164,8 +164,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     else:
       pNode.SetParameter('followupTransformID', '')
 
-    Helper.Info('Update parametersfromwidget complete, metrics are '+metricsList)
-
   def doStepProcessing(self):
     print 'Step processing'
     '''
@@ -197,7 +195,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
       # FIXME: make sure brainsfit is available first?
       cliNode = None
-      cliNode = slicer.cli.run(slicer.modules.brainsfit, cliNode, parameters, 1)
+      cliNode = slicer.cli.run(slicer.modules.brainsfit, cliNode, parameters, wait_for_completion = True)
       
       status = cliNode.GetStatusString()
       if status == 'Completed':
@@ -252,7 +250,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       Helper.Error('doStepProcessing(): metrics list is empty!')
       
     resultVolumesList = ''
-    resultReportsList = ''
 
     moduleManager = slicer.app.moduleManager()
     for m in string.split(metricsList,','):
@@ -286,12 +283,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
           resultVolumesList = resultVolumesList + ','
       resultVolumesList = resultVolumesList + outputVolume.GetID()
 
-      if resultReportsList != '':
-          resultReportsList = resultReportsList + ','
-      resultReportsList = resultReportsList + outputReport
+      outputVolume.SetDescription(Helper.readFileAsString(outputReport))
 
     pNode.SetParameter('resultVolumes', resultVolumesList)
-    pNode.SetParameter('resultReports', resultReportsList)
 
     Helper.Info('Selected metrics: '+pNode.GetParameter('metrics'))
     Helper.Info('Metrics processing results:'+pNode.GetParameter('resultVolumes'))
