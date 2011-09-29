@@ -137,6 +137,8 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     '''
     self.onTabChanged(0)
 
+    pNode.SetParameter('currentStep', self.stepid)
+
     Helper.Info('Report step: leaving onEntry()')
 
   def onTabChanged(self, index):

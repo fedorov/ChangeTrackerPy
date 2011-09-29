@@ -174,6 +174,8 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
     
     self.updateWidgetFromParameters(pNode)
+    
+    pNode.SetParameter('currentStep', self.stepid)
 
   def updateWidgetFromParameters(self, pNode):
     thresholdRange = pNode.GetParameter('thresholdRange')

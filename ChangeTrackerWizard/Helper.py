@@ -119,3 +119,10 @@ class Helper( object ):
   @staticmethod
   def getNodeByID(id):
     return slicer.mrmlScene.GetNodeByID(id)
+
+  @staticmethod
+  def readFileAsString(fname):
+    s = ''
+    with open(fname, 'r') as f:
+      s = f.read()
+    return s

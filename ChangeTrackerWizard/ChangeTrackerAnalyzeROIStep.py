@@ -94,7 +94,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # TODO (?) query parameters for each metric, and put each metric into a
     # separate frame, with the parameters GUI initialized. Might be a nice
-    # feature to have.
+    # feature to have.`
 
   def validate( self, desiredBranchId ):
     '''
@@ -117,6 +117,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     Helper.Info('Analuze step: on Entry')
     super(ChangeTrackerAnalyzeROIStep, self).onEntry(comingFrom, transitionType)
     self.updateWidgetFromParameters()
+
+    pNode = self.parameterNode()
+    pNode.SetParameter('currentStep', self.stepid)
 
   def onExit(self, goingTo, transitionType):
     '''
