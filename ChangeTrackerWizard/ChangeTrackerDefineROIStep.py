@@ -189,25 +189,14 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     # use this transform node to align ROI with the axes of the baseline
     # volume
-    if self.__roiTransformNode == None:
-      print 'ROI transform node created'
-      self.__roiTransformNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLLinearTransformNode')
-      print 'node is ',self.__roiTransformNode
-      slicer.mrmlScene.AddNode(self.__roiTransformNode)
+    roiTfmNodeID = pNode.GetParameter('roiTransformNodeID')
+    if roiTfmNodeID != '':
+      self.__roiTransformNode = Helper.getNodeByID(roiTfmNodeID)
+    else:
+      Helper.Error('Internal error! Error code CT-S2-NRT, please report!')
     
     baselineVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
     self.__baselineVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
-
-
-    dm = vtk.vtkMatrix4x4()
-    baselineVolume.GetIJKToRASDirectionMatrix(dm)
-    dm.SetElement(0,3,0)
-    dm.SetElement(1,3,0)
-    dm.SetElement(2,3,0)
-    dm.SetElement(0,0,abs(dm.GetElement(0,0)))
-    dm.SetElement(1,1,abs(dm.GetElement(1,1)))
-    dm.SetElement(2,2,abs(dm.GetElement(2,2)))
-    self.__roiTransformNode.SetAndObserveMatrixTransformToParent(dm)
 
     # get the roiNode from parameters node, if it exists, and initialize the
     # GUI
@@ -216,7 +205,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     if self.__roi != None:
       self.__roi.VisibleOn()
 
-    # setup interface
+    pNode.SetParameter('currentStep', self.stepid)
 
 # setup interface
   def onExit(self, goingTo, transitionType):

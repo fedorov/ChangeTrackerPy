@@ -78,10 +78,12 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
     print 'SelectScans step: onEntry'
     super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
     self.updateWidgetFromParameters(self.parameterNode())
-    #super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
+    pNode = self.parameterNode()
+    pNode.SetParameter('currentStep', self.stepid)
 
   def onExit(self, goingTo, transitionType):
     print 'SelectScans step: onExit'
+    self.doStepProcessing()
     super(ChangeTrackerSelectScansStep, self).onExit(goingTo, transitionType) 
 
   def updateWidgetFromParameters(self, parameterNode):
@@ -91,3 +93,29 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
       self.__baselineVolumeSelector.setCurrentNode(Helper.getNodeByID(baselineVolumeID))
     if followupVolumeID != None:
       self.__followupVolumeSelector.setCurrentNode(Helper.getNodeByID(followupVolumeID))
+
+
+  def doStepProcessing(self):
+    # calculate the transform to align the ROI in the next step with the
+    # baseline volume
+    pNode = self.parameterNode()
+
+    baselineVolume = Helper.getNodeByID(pNode.GetParameter('baselineVolumeID'))
+    roiTransformID = pNode.GetParameter('roiTransformID')
+    roiTransformNode = None
+    
+    if roiTransformID != '':
+      roiTransformNode = Helper.getNodeByID(roiTfmNodeID)
+    else:
+      roiTransformNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLLinearTransformNode')
+      slicer.mrmlScene.AddNode(roiTransformNode)
+
+    dm = vtk.vtkMatrix4x4()
+    baselineVolume.GetIJKToRASDirectionMatrix(dm)
+    dm.SetElement(0,3,0)
+    dm.SetElement(1,3,0)
+    dm.SetElement(2,3,0)
+    dm.SetElement(0,0,abs(dm.GetElement(0,0)))
+    dm.SetElement(1,1,abs(dm.GetElement(1,1)))
+    dm.SetElement(2,2,abs(dm.GetElement(2,2)))
+    roiTransformNode.SetAndObserveMatrixTransformToParent(dm)
