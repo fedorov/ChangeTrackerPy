@@ -20,8 +20,7 @@
 #define DEMONS_REVERSE_RESULT "ctdr-seg_reverse_registered.nrrd"
 #define DEMONS_REVERSE_DF_RESULT "ctdr-seg_reverse_registered_DF.nrrd"
 #define DEMONS_WARPED_SEGMENTATION "ctdr-seg_followup_segmentation.nrrd"
-// this will go away once bug #1455 is resolved
-#define PLUGINS_PATH "/Users/fedorov/Slicer/Slicer4-Superbuild/Slicer-build/lib/Slicer-4.0/cli-modules/"
+#define PLUGINS_PATH ""
 #define GROWTH_LABEL 14
 #define SHRINK_LABEL 12
 
@@ -36,7 +35,7 @@ int main(int argc, char *argv[])
   std::string warpedSegmentationFileName = tmpDirectory+"/"+DEMONS_WARPED_SEGMENTATION;
 
   // run registration with the followup as fixed image
-  cmdLine << PLUGINS_PATH << "/BRAINSDemonWarp " <<
+  cmdLine << PLUGINS_PATH << "BRAINSDemonWarp " <<
     "--registrationFilterType Demons -n 3 -i 20,20,20 " << // 3 levels, with 20 iterations each
     " --minimumFixedPyramid 2,2,2 --minimumMovingPyramid 2,2,2 " <<
     " --movingVolume " << baselineVolume <<
@@ -55,7 +54,7 @@ int main(int argc, char *argv[])
   cmdLine.str("");
 
   // resample the segmentation of the baseline image to the fixed image
-  cmdLine << PLUGINS_PATH << "/BRAINSResample " <<
+  cmdLine << PLUGINS_PATH << "BRAINSResample " <<
     " --referenceVolume " << followupVolume <<
     " --inputVolume " << baselineSegmentationVolume <<
     " --interpolationMode NearestNeighbor " <<
@@ -121,10 +120,13 @@ int main(int argc, char *argv[])
     std::cout << "Saving report to " << reportFileName << std::endl;
     ImageType::SpacingType s = changesLabel->GetSpacing();
     float sv = s[0]*s[1]*s[2];
-    std::ofstream rep(reportFileName.c_str());
-    rep << "Growth: " << growthPixels*sv << " mm^3 (" << growthPixels << " pixels) " << std::endl;
-    rep << "Shrinkage: " << shrinkPixels*sv << " mm^3 (" << shrinkPixels << " pixels) " << std::endl;
-    rep << "Total: " << (growthPixels-shrinkPixels)*sv << " mm^3 (" << growthPixels-shrinkPixels << " pixels) " << std::endl;
+    std::ofstream report(reportFileName.c_str());
+
+    float growthVolume = growthPixels*sv, shrinkVolume = shrinkPixels*sv, totalVolume = (growthPixels-shrinkPixels)*sv, totalPixels = (growthPixels-shrinkPixels);
+
+    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#ff0000;\">Growth</span>: " << growthVolume << " mm<sup>3 </sup></strong>(" << growthPixels << " pixels)</span></p>";
+    report << "<p><span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#008000;\">Shrinkage</span>: " << shrinkVolume << " mm<sup>3&nbsp;</sup></strong>(" << shrinkPixels << " pixels)</span></p><p>";
+    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong>Total: " <<  totalVolume << " mm<sup>3&nbsp;</sup></strong>(" << totalPixels << " pixels)</span></p>";
   }
   
   return EXIT_SUCCESS;
