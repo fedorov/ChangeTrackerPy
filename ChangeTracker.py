@@ -119,6 +119,23 @@ class ChangeTrackerWidget:
         s.setMRMLManager( self.mrmlManager() )
     '''
 
+    # restore workflow step
+    currentStep = self.parameterNode.GetParameter('currentStep')
+    if currentStep != '':
+      print 'Restoring workflow step to ', currentStep
+      if currentStep == 'SelectScans':
+        self.workflow.setInitialStep(selectScansStep)
+      if currentStep == 'DefineROI':
+        self.workflow.setInitialStep(defineROIStep)
+      if currentStep == 'SegmentROI':
+        self.workflow.setInitialStep(segmentROIStep)
+      if currentStep == 'AnalyzeROI':
+        self.workflow.setInitialStep(analyzeROIStep)
+      if currentStep == 'ReportROI':
+        self.workflow.setInitialStep(reportROIStep)
+    else:
+      print 'currentStep in parameter node is empty!'
+        
     # start the workflow and show the widget
     self.workflow.start()
     workflowWidget.visible = True
