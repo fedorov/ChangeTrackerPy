@@ -219,15 +219,26 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     if self.__vrDisplayNode != None:
       self.__vrDisplayNode.VisibilityOff()
 
+    pNode = self.parameterNode()
+    pNode.SetParameter('roiNodeID', self.__roiSelector.currentNode().GetID())
+
+    if goingTo.id() > self.id():
+      self.doStepProcessing()
+
+    super(ChangeTrackerDefineROIStep, self).onExit(goingTo, transitionType)
+
+  def updateWidgetFromParameterNode(self, parameterNode):
+    roiNodeID = parameterNode.GetParameter('roiNodeID')
+    if roiNodeID != '':
+      self.__roi = slicer.mrmlScene.GetNodeByID(roiNodeID)
+      self.__roiSelector.setCurrentNode(Helper.getNodeByID(self.__roi.GetID()))
+      self.onROIChanged()
+
+  def doStepProcessing(self):
     '''
     prepare roi image for the next step
     '''
     pNode = self.parameterNode()
-    
-    pNode.SetParameter('roiNodeID', self.__roiSelector.currentNode().GetID())
-    baselineVolumeID = pNode.GetParameter('baselineVolumeID')
-    baselineVolume = slicer.mrmlScene.GetNodeByID(baselineVolumeID)
-
     cropVolumeNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCropVolumeParametersNode')
     cropVolumeNode.SetScene(slicer.mrmlScene)
     cropVolumeNode.SetName('ChangeTracker_CropVolume_node')
@@ -261,11 +272,5 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       pNode.SetParameter('useSegmentationThresholds', 'True')
       pNode.SetParameter('croppedBaselineVolumeSegmentationID', roiSegmentation.GetID())
 
-    super(ChangeTrackerDefineROIStep, self).onExit(goingTo, transitionType)
 
-  def updateWidgetFromParameterNode(self, parameterNode):
-    roiNodeID = parameterNode.GetParameter('roiNodeID')
-    if roiNodeID != '':
-      self.__roi = slicer.mrmlScene.GetNodeByID(roiNodeID)
-      self.__roiSelector.setCurrentNode(Helper.getNodeByID(self.__roi.GetID()))
-      self.onROIChanged()
+

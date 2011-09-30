@@ -129,7 +129,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     self.updateParametersFromWidget()
 
-    self.doStepProcessing()
+    if goingTo.id() > self.id():
+      self.doStepProcessing()
+
     Helper.Info('Analyze step: leaving onExit()')
     
     super(ChangeTrackerAnalyzeROIStep, self).onExit(goingTo, transitionType)
