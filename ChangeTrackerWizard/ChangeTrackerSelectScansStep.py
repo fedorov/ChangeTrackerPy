@@ -105,10 +105,12 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
     roiTransformNode = None
     
     if roiTransformID != '':
-      roiTransformNode = Helper.getNodeByID(roiTfmNodeID)
+      roiTransformNode = Helper.getNodeByID(roiTransformID)
     else:
       roiTransformNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLLinearTransformNode')
       slicer.mrmlScene.AddNode(roiTransformNode)
+      pNode.SetParameter('roiTransformID', roiTransformNode.GetID())
+      print 'Added transform node: ', pNode.GetParameter('roiTransformID')
 
     dm = vtk.vtkMatrix4x4()
     baselineVolume.GetIJKToRASDirectionMatrix(dm)

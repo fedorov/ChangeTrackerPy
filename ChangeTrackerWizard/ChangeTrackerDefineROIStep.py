@@ -189,7 +189,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     # use this transform node to align ROI with the axes of the baseline
     # volume
-    roiTfmNodeID = pNode.GetParameter('roiTransformNodeID')
+    roiTfmNodeID = pNode.GetParameter('roiTransformID')
+    print 'roiTfmNodeID = ',roiTfmNodeID 
     if roiTfmNodeID != '':
       self.__roiTransformNode = Helper.getNodeByID(roiTfmNodeID)
     else:
@@ -247,7 +248,18 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     outputVolume.SetName("baselineROI")
     pNode.SetParameter('croppedBaselineVolumeID',cropVolumeNode.GetOutputVolumeNodeID())
 
-    print 'Cropped baseline volume id: ', cropVolumeNode.GetOutputVolumeNodeID()
+    roiSegmentationID = pNode.GetParameter('croppedBaselineVolumeSegmentationID') 
+    if roiSegmentationID == '':
+      # otherwise, nothing to be done here
+      vl = slicer.modules.volumes.logic()
+      roiSegmentation = vl.CreateLabelVolume(slicer.mrmlScene, outputVolume, 'baselineROI_segmentation')
+      roiRange = outputVolume.GetImageData().GetScalarRange()
+
+      # default threshold is half-way of the range
+      thresholdParameter = str(0.5*(roiRange[0]+roiRange[1]))+','+str(roiRange[1])
+      pNode.SetParameter('thresholdRange', thresholdParameter)
+      pNode.SetParameter('useSegmentationThresholds', 'True')
+      pNode.SetParameter('croppedBaselineVolumeSegmentationID', roiSegmentation.GetID())
 
     super(ChangeTrackerDefineROIStep, self).onExit(goingTo, transitionType)
 
