@@ -1,4 +1,3 @@
-ADD_SUBDIRECTORY(MRML)
 ADD_SUBDIRECTORY(ChangeTrackerWizard)
 ADD_SUBDIRECTORY(ChangeTrackerMetrics)
 
