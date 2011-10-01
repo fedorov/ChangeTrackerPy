@@ -4,7 +4,7 @@
   Quantification
   </category>
   <title>
-  Intensity Difference Change Detection
+  Intensity Difference Change Detection (FAST)
   </title>
   <description>
   Quantifies the changes between two spatially aligned images based on the pixel-wise difference of image intensities.
