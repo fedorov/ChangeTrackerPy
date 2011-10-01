@@ -58,4 +58,16 @@
     </image>
   </parameters>
 
+  <parameters advanced="true">
+    <label>Report</label>
+    <description>Specify a file to save the change detection report text.</description>
+    <file>
+      <name>reportFileName</name>
+      <label>Report file name</label>
+      <channel>output</channel>
+      <longflag>reportFileName</longflag>
+      <description>Report file name</description>
+    </file>
+  </parameters>
+
 </executable>

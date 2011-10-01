@@ -192,6 +192,14 @@ int main(int argc, char **argv){
 
   mask = thresh->GetOutput();
 
+  /*
+  WriteImage(mask, outputVolume.c_str());
+  std::ofstream report(reportFileName.c_str());
+  report << "TEST TEST TEST" << std::endl;
+
+  return 0;
+  */
+
   ReaderType::Pointer r1 = ReaderType::New();
   ReaderType::Pointer r2 = ReaderType::New();
   r1->SetFileName(inputImage1Name);
@@ -591,7 +599,7 @@ int main(int argc, char **argv){
   WriteImage(tp1image, (tmpDirName+"warped_mask.nrrd").c_str());
 
   ImageType::Pointer changes = MarkChanges(tp0image, tp1image);
-  WriteImage(changes, (tmpDirName+"changes_mask.nrrd").c_str());
+  WriteImage(changes, outputVolume.c_str());
 
   return EXIT_SUCCESS;
 }
