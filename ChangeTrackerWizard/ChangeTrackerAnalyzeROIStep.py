@@ -66,7 +66,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       pluginName = os.path.split(m)[1]
       metricName = re.match(r"ChangeTracker(\w+)Metric", pluginName).group(1)
       print "Discovered metric ",metricName
-      label = qt.QLabel(metricName)
+      moduleManager = slicer.app.moduleManager()
+      plugin = moduleManager.module(pluginName)
+      label = qt.QLabel(plugin.title)
       checkbox = qt.QCheckBox()
       self.__metricCheckboxList[checkbox] = metricName
 
