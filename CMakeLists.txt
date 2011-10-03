@@ -1,5 +1,5 @@
-ADD_SUBDIRECTORY(ChangeTrackerWizard)
-ADD_SUBDIRECTORY(ChangeTrackerMetrics)
+ADD_SUBDIRECTORY(Wizard)
+ADD_SUBDIRECTORY(Metrics)
 
 SET(CT_PYTHON_SCRIPTS
     ChangeTracker.py
