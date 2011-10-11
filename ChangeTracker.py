@@ -5,7 +5,7 @@ import ChangeTrackerWizard
 class ChangeTracker:
   def __init__( self, parent ):
     parent.title = "ChangeTracker"
-    parent.category = ""
+    parent.category = "Wizards"
     parent.contributor = "Andrey Fedorov"
     parent.helpText = """Help text"""
     parent.acknowledgementText = """Ack text"""
