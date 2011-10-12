@@ -26,8 +26,11 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # find all metrics in the plugins directory. The assumption is that all
     # metrics are named as ChangeTracker*Metric
-    metricsSearchPattern = slicer.app.slicerHome+'/lib/Slicer-4.0/cli-modules/ChangeTracker*Metric'
+    metricsSearchPattern = slicer.app.slicerHome+'/lib/Slicer-4.0/cli-modules/*Metric'
     changeTrackerMetrics = glob.glob(metricsSearchPattern)
+
+    print 'Change tracking metrics search pattern: ', metricsSearchPattern
+    print 'Metrics found: ', changeTrackerMetrics
 
     # if len(changeTrackerMetrics) == 0:
     #   report error -- should this be done in __init__ ? 
@@ -64,7 +67,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     # TODO: error checking!
     for m in changeTrackerMetrics:
       pluginName = os.path.split(m)[1]
-      metricName = re.match(r"ChangeTracker(\w+)Metric", pluginName).group(1)
+      metricName = re.match(r"(\w+)Metric", pluginName).group(1)
       print "Discovered metric ",metricName
       moduleManager = slicer.app.moduleManager()
       plugin = moduleManager.module(pluginName)
@@ -271,7 +274,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     for m in string.split(metricsList,','):
       # TODO: processing should be separated from the workflow! need to move
       # this into a different place
-      pluginName = 'ChangeTracker'+m+'Metric'
+      pluginName = m+'Metric'
       # pluginName = pluginName.lower()
         
       vl = slicer.modules.volumes.logic()

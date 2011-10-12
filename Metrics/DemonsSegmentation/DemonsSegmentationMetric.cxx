@@ -6,7 +6,7 @@
 */
 
 #include <stdlib.h>
-#include <ChangeTrackerDemonsRegistrationSegmentationMetricCLP.h>
+#include <DemonsSegmentationMetricCLP.h>
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
