@@ -46,8 +46,12 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
 
   def loadData(self):
     vl = slicer.modules.volumes.logic()
-    vl.AddArchetypeVolume('http://www.slicer.org/slicerWiki/images/5/59/RegLib_C01_1.nrrd', 'Meningioma1', 0)
-    vl.AddArchetypeVolume('http://www.slicer.org/slicerWiki/images/e/e3/RegLib_C01_2.nrrd', 'Meningioma2', 0)
+    vol1 = vl.AddArchetypeVolume('http://www.slicer.org/slicerWiki/images/5/59/RegLib_C01_1.nrrd', 'Meningioma1', 0)
+    vol2 = vl.AddArchetypeVolume('http://www.slicer.org/slicerWiki/images/e/e3/RegLib_C01_2.nrrd', 'Meningioma2', 0)
+    if vol1 != None and vol2 != None:
+      self.__baselineVolumeSelector.setCurrentNode(vol1)
+      self.__followupVolumeSelector.setCurrentNode(vol1)
+      Helper.SetBgFgVolumes(vol1.GetID(), vol2.GetID())
 
   def validate( self, desiredBranchId ):
     '''
