@@ -1,3 +1,8 @@
+
+if(BUILD_TESTING)
+  set(Launcher_Command ${Slicer_LAUNCH_COMMAND})
+endif()
+
 ADD_SUBDIRECTORY(Wizard)
 ADD_SUBDIRECTORY(Metrics)
 
@@ -16,3 +21,4 @@ ctkMacroCompilePythonScript(
   INSTALL_DIR ${Slicer_INSTALL_QTSCRIPTEDMODULES_LIB_DIR}
   NO_INSTALL_SUBDIR
   )
+
