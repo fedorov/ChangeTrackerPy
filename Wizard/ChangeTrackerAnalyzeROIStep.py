@@ -26,8 +26,11 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # find all metrics in the plugins directory. The assumption is that all
     # metrics are named as ChangeTracker*Metric
-    metricsSearchPattern = slicer.app.slicerHome+'/lib/Slicer-4.0/cli-modules/*Metric'
-    changeTrackerMetrics = glob.glob(metricsSearchPattern)
+    allModules = dir(slicer.modules)
+    changeTrackerMetrics = []
+    for m in allModules:
+      if m.endswith('Metric'):
+        changeTrackerMetrics.append(m)
 
     print 'Change tracking metrics search pattern: ', metricsSearchPattern
     print 'Metrics found: ', changeTrackerMetrics
@@ -66,8 +69,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # TODO: error checking!
     for m in changeTrackerMetrics:
-      pluginName = os.path.split(m)[1]
-      metricName = re.match(r"(\w+)Metric", pluginName).group(1)
+      metricName = m
       print "Discovered metric ",metricName
       moduleManager = slicer.app.moduleManager()
       plugin = moduleManager.module(pluginName)
