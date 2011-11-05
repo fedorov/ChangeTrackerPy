@@ -32,7 +32,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       if m.endswith('Metric'):
         changeTrackerMetrics.append(m)
 
-    print 'Change tracking metrics search pattern: ', metricsSearchPattern
     print 'Metrics found: ', changeTrackerMetrics
 
     # if len(changeTrackerMetrics) == 0:
