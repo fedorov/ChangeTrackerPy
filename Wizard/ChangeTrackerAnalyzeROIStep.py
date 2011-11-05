@@ -26,7 +26,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # find all metrics in the plugins directory. The assumption is that all
     # metrics are named as ChangeTracker*Metric
-    allModules = dir(slicer.modules)
+    allModules = dir(slicer.moduleNames)
     changeTrackerMetrics = []
     for m in allModules:
       if m.endswith('Metric'):
