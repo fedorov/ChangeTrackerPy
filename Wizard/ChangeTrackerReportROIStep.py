@@ -121,16 +121,24 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
         scNode.SetLabelVolumeID('')
         scNode.SetLinkedControl(1)
 
+    print 'Layout prepared'
 
     '''
     setup for volume rendering
+    '''
+
+    messageBox = qt.QMessageBox.warning( self, 'Check Mantis!', 'Volume rendering of the result has been disabled pending resolution of bug #1528' )
+
     '''
     if self.__vrDisplayNode == None:
       print 'Creating display node in the last step'
       self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
       viewNode = slicer.util.getNode('vtkMRMLViewNode1')
-      self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
       self.__vrDisplayNode.SetCurrentVolumeMapper(2)
+      self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
+
+    print 'Volume rendering node created'
+    '''
 
     '''
     trigger volume rendering and label update
@@ -167,9 +175,12 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     '''
     volume render change detection results
     '''
-    
+    return
+
     print 'Changes volume to render: ',labelID
     labelVolume = slicer.mrmlScene.GetNodeByID(labelID)
+    print 'Label volume: ',labelVolume
+    print ' ... and its display node: ',labelVolume.GetDisplayNode()
 
     self.__vrDisplayNode.SetAndObserveVolumeNodeID(labelID)
     self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, labelVolume)
@@ -196,5 +207,10 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     vrOpacityMap.AddPoint(13.9,0)
     vrOpacityMap.AddPoint(14,1)
     vrOpacityMap.AddPoint(15,0)
+
+    roiNodeID = self.parameterNode().GetParameter('roiNodeID')
+    if roiNodeID != '':
+      self.SetAndObserveROINodeID(roiNodeID)
+      self.SetCroppingEnabled(0);
 
     self.__vrDisplayNode.VisibilityOn()
