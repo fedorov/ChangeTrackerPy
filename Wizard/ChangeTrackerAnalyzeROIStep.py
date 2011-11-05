@@ -68,13 +68,13 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     # TODO: error checking!
     for m in changeTrackerMetrics:
-      metricName = m
-      print "Discovered metric ",metricName
+      pluginName = m
+      print "Discovered metric ",pluginName
       moduleManager = slicer.app.moduleManager()
       plugin = moduleManager.module(pluginName)
       label = qt.QLabel(plugin.title)
       checkbox = qt.QCheckBox()
-      self.__metricCheckboxList[checkbox] = metricName
+      self.__metricCheckboxList[checkbox] = pluginName
 
       # initialize basic frame
       basicFrameLayout.addRow(label, checkbox)
@@ -87,7 +87,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
         metricWidget = qt.QWidget()
         metricLayout = qt.QFormLayout(metricWidget)
         metricLayout.addRow(parametersWidget)
-        self.__metricsTabs.addTab(metricWidget, metricName)
+        self.__metricsTabs.addTab(metricWidget, pluginName)
       
     self.__transformSelector = slicer.qMRMLNodeComboBox()
     self.__transformSelector.toolTip = "Transform aligning the follow-up scan with the baseline"
