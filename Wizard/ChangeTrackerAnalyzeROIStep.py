@@ -275,7 +275,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     for m in string.split(metricsList,','):
       # TODO: processing should be separated from the workflow! need to move
       # this into a different place
-      pluginName = m+'Metric'
+      pluginName = m
       # pluginName = pluginName.lower()
         
       vl = slicer.modules.volumes.logic()
