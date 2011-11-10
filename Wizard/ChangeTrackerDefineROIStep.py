@@ -216,7 +216,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     pNode = self.parameterNode()
     pNode.SetParameter('roiNodeID', self.__roiSelector.currentNode().GetID())
 
-    if goingTo.id() > self.id():
+    if goingTo.id() == 'SegmentROI':
       self.doStepProcessing()
 
     super(ChangeTrackerDefineROIStep, self).onExit(goingTo, transitionType)

@@ -138,7 +138,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     self.updateParametersFromWidget()
 
-    if goingTo.id() > self.id():
+
+    print 'onExit() in Analyze step: goingTo = ',goingTo.id(),', selfId = ',self.id()
+    if goingTo.id() == 'ReportROI':
       self.doStepProcessing()
 
     Helper.Info('Analyze step: leaving onExit()')
