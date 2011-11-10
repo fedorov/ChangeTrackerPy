@@ -122,7 +122,6 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     xnodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLCrosshairNode')
     self.__xnode = xnodes.GetItemAsObject(0)
     if self.__xnode != None:
-      print 'Setting crosshair mode to 5!'
       self.__xnode.SetCrosshairMode(5)
     else:
       print 'Failed to find crosshair node!'
