@@ -195,7 +195,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     baselineROIVolume = Helper.getNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
     baselineROIRange = baselineROIVolume.GetImageData().GetScalarRange()
     self.__threshRange.minimum = baselineROIRange[0]
-    self.__threshRange.minimum = baselineROIRange[1]
+    self.__threshRange.maximum = baselineROIRange[1]
 
     if pNode.GetParameter('useSegmentationThresholds') == 'True':
       self.__useThresholds = True
