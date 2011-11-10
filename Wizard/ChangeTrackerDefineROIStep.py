@@ -223,10 +223,18 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
   def updateWidgetFromParameterNode(self, parameterNode):
     roiNodeID = parameterNode.GetParameter('roiNodeID')
+
     if roiNodeID != '':
       self.__roi = slicer.mrmlScene.GetNodeByID(roiNodeID)
       self.__roiSelector.setCurrentNode(Helper.getNodeByID(self.__roi.GetID()))
-      self.onROIChanged()
+    else:
+      roi = slicer.mrmlScene.CreateNodeByClass('vtkMRMLAnnotationROINode')
+      slicer.mrmlScene.AddNode(roi)
+      parameterNode.SetParameter('roiNodeID', roi.GetID())
+      self.__roiSelector.setCurrentNode(roi)
+    
+    self.onROIChanged()
+      
 
   def doStepProcessing(self):
     '''

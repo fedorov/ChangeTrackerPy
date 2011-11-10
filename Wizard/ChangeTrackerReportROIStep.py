@@ -16,6 +16,8 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     self.__vrOpacityMap = None
     self.__vrLogic = slicer.modules.volumerendering.logic()
 
+    self.__xnode = None
+
     self.__parent = super( ChangeTrackerReportROIStep, self )
 
   def createUserInterface( self ):
@@ -115,6 +117,17 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
 
+    # Enable crosshairs
+    # Is there only one crosshair node?
+    xnodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLCrosshairNode')
+    self.__xnode = xnodes.GetItemAsObject(0)
+    if self.__xnode != None:
+      print 'Setting crosshair mode to 5!'
+      self.__xnode.SetCrosshairMode(5)
+    else:
+      print 'Failed to find crosshair node!'
+
+
     '''
     setup for volume rendering
     '''
@@ -132,6 +145,16 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     pNode.SetParameter('currentStep', self.stepid)
 
     Helper.Info('Report step: leaving onEntry()')
+
+  def onExit(self, goingTo, transitionType):
+    '''
+    Reset crosshairs
+    '''
+    if self.__xnode != None:
+      self.__xnode.SetCrosshairMode(0)
+
+    super(ChangeTrackerReportROIStep, self).onExit(goingTo, transitionType)
+
 
   def onTabChanged(self, index):
 
