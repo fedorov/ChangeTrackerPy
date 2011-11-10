@@ -116,13 +116,16 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     if nSelectedMetrics > 0:
     
       # do we have a transform node?
+      '''
       followupTransform = self.__transformSelector.currentNode()
       if followupTransform != None:
         self.__parent.validationSucceeded(desiredBranchId)
       else:
         self.__parent.validationFailed(desiredBranchId, 'Error', "Please register followup to baseline, and specify transform in the Advanced tab, pending resolution of bug #1464")
-
+      '''
       print 'Validation from Analysis step succeeded!'
+      self.__parent.validationSucceeded(desiredBranchId)
+
     else:
       self.__parent.validationFailed(desiredBranchId, 'Error', "At least one metric should be selected to proceed to the next step!")
 
