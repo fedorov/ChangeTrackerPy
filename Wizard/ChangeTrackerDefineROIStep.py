@@ -24,7 +24,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
   def createUserInterface( self ):
     '''
     '''
-    print 'DefineROI create interface'
     self.__layout = self.__parent.createUserInterface()
 
     roiLabel = qt.QLabel( 'Select ROI:' )
@@ -61,8 +60,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       pNode = self.parameterNode()
       # create VR node first time a valid ROI is selected
       if self.__vrDisplayNode == None:
-        print 'VR node is ', self.__vrDisplayNode
-        print 'DEBUG: ChangeTracker DefineROI step: Creating VR node!'
         self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
         viewNode = slicer.util.getNode('vtkMRMLViewNode1')
         self.__vrDisplayNode.SetCurrentVolumeMapper(2)
@@ -170,7 +167,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
   def validate( self, desiredBranchId ):
     '''
     '''
-    print 'ChangeTrackerDefineROIStep: validate'
     self.__parent.validate( desiredBranchId )
     roi = self.__roiSelector.currentNode()
     if roi == None:
@@ -190,7 +186,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # use this transform node to align ROI with the axes of the baseline
     # volume
     roiTfmNodeID = pNode.GetParameter('roiTransformID')
-    print 'roiTfmNodeID = ',roiTfmNodeID 
     if roiTfmNodeID != '':
       self.__roiTransformNode = Helper.getNodeByID(roiTfmNodeID)
     else:
@@ -212,7 +207,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
   def onExit(self, goingTo, transitionType):
     # TODO: add storeWidgetStateToParameterNode() -- move all pNode-related stuff
     # there?
-    print 'ChangeTrackerDefineROIStep: onExit'
     if self.__roi != None:
       self.__roi.RemoveObserver(self.__roiObserverTag)
       self.__roi.VisibleOff()

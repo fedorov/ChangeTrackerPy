@@ -32,7 +32,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       if m.endswith('Metric'):
         changeTrackerMetrics.append(m)
 
-    print 'Metrics found: ', changeTrackerMetrics
+    print 'Metrics discovered: ', changeTrackerMetrics
 
     # if len(changeTrackerMetrics) == 0:
     #   report error -- should this be done in __init__ ? 
@@ -69,7 +69,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     # TODO: error checking!
     for m in changeTrackerMetrics:
       pluginName = m
-      print "Discovered metric ",pluginName
       moduleManager = slicer.app.moduleManager()
       plugin = moduleManager.module(pluginName)
       label = qt.QLabel(plugin.title)
@@ -116,14 +115,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     if nSelectedMetrics > 0:
     
       # do we have a transform node?
-      '''
-      followupTransform = self.__transformSelector.currentNode()
-      if followupTransform != None:
-        self.__parent.validationSucceeded(desiredBranchId)
-      else:
-        self.__parent.validationFailed(desiredBranchId, 'Error', "Please register followup to baseline, and specify transform in the Advanced tab, pending resolution of bug #1464")
-      '''
-      print 'Validation from Analysis step succeeded!'
       self.__parent.validationSucceeded(desiredBranchId)
 
     else:
@@ -177,7 +168,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
         if metricsList != '':
           metricsList = metricsList + ','     
         metricsList = metricsList + self.__metricCheckboxList[m]
-    print 'Metrics = ', metricsList
     pNode.SetParameter('metrics', metricsList)
 
     # do we have a transform node?
@@ -297,7 +287,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
       '''
       TODO: error checking for CLI!
-      assign the proper color table to the results volume
       '''
       labelsColorNode = slicer.modules.colors.logic().GetColorTableNodeID(10)
       outputVolume.GetDisplayNode().SetAndObserveColorNodeID(labelsColorNode)

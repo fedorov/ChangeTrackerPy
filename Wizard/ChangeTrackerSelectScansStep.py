@@ -6,7 +6,6 @@ from Helper import *
 class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
 
   def __init__( self, stepid ):
-    print 'Select scans: init'
     self.initialize( stepid )
     self.setName( '1. Select input scans' )
     self.setDescription( 'Select the baseline and follow-up scans to be compared.' )
@@ -16,7 +15,6 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
   def createUserInterface( self ):
     '''
     '''
-    print 'SelectScans step: createInterface'
     # TODO: might make sense to hide the button for the last step at this
     # point, but the widget does not have such option
     self.__layout = self.__parent.createUserInterface()
@@ -56,7 +54,6 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
   def validate( self, desiredBranchId ):
     '''
     '''
-    print 'SelectScans step: validate'
     self.__parent.validate( desiredBranchId )
 
     # check here that the selectors are not empty
@@ -79,14 +76,12 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
       self.__parent.validationFailed(desiredBranchId, 'Error','Please select both baseline and followup volumes!')
 
   def onEntry(self, comingFrom, transitionType):
-    print 'SelectScans step: onEntry'
     super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
     self.updateWidgetFromParameters(self.parameterNode())
     pNode = self.parameterNode()
     pNode.SetParameter('currentStep', self.stepid)
 
   def onExit(self, goingTo, transitionType):
-    print 'SelectScans step: onExit'
     self.doStepProcessing()
     super(ChangeTrackerSelectScansStep, self).onExit(goingTo, transitionType) 
 
@@ -114,7 +109,6 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
       roiTransformNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLLinearTransformNode')
       slicer.mrmlScene.AddNode(roiTransformNode)
       pNode.SetParameter('roiTransformID', roiTransformNode.GetID())
-      print 'Added transform node: ', pNode.GetParameter('roiTransformID')
 
     dm = vtk.vtkMatrix4x4()
     baselineVolume.GetIJKToRASDirectionMatrix(dm)

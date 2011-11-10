@@ -32,7 +32,6 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
   def createUserInterface( self ):
     '''
     '''
-    print 'SegmentROI create interface'
 #    self.buttonBoxHints = self.ButtonBoxHidden
 
     self.__layout = self.__parent.createUserInterface()
@@ -129,11 +128,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
   def onEntry(self, comingFrom, transitionType):
     '''
-    Resample the baseline volume using ROI
-
-    TODO: if coming from the next step, do not resample!
-
-    TODO: this should go to onExit() in the previous step!
+    Update GUI and visualization
     '''
     super(ChangeTrackerSegmentROIStep, self).onEntry(comingFrom, transitionType)
 

@@ -55,16 +55,11 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     i = 0
 
     metricsList = string.split(metrics,',')
-    print 'Total metrics: ',len(metricsList)
-
-    print 'Metrics volumes ids = ', metricsVolumesIDs
-    print 'Metrics = ', metricsList
 
     if len(metricsVolumesIDs) != len(metricsList):
       Helper.Error('Missing metric processing results!')
 
     for m in metricsList:
-      print 'Adding tab for metric ',m
       metricWidget = qt.QWidget()
       metricLayout = qt.QFormLayout(metricWidget)
       textWidget = qt.QTextEdit()
@@ -77,12 +72,9 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       metricLayout.addRow(textWidget)
       self.__metricsTabs.addTab(metricWidget, m)
       self.__metricTabsList[m] = textWidget
-      print 'Finished preparing for ', m
       i = i+1
 
     self.__metricsTabs.connect("currentChanged(int)", self.onTabChanged)
-    print 'Creating user interface for last step -- DONE!'
-
 
     # change the layout to Compare
     lm = slicer.app.layoutManager()
@@ -121,27 +113,16 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
         scNode.SetLabelVolumeID('')
         scNode.SetLinkedControl(1)
 
-    print 'Layout prepared'
-
-    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
     slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
 
     '''
     setup for volume rendering
     '''
-
-    #messageBox = qt.QMessageBox.warning( self, 'Check Mantis!', 'Volume rendering of the result has been disabled pending resolution of bug #1528' )
-
-    #'''
     if self.__vrDisplayNode == None:
-      print 'Creating display node in the last step'
       self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
       viewNode = slicer.util.getNode('vtkMRMLViewNode1')
       self.__vrDisplayNode.SetCurrentVolumeMapper(2)
       self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
-
-    print 'Volume rendering node created'
-    #'''
 
     '''
     trigger volume rendering and label update
@@ -155,8 +136,6 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
   def onTabChanged(self, index):
 
     metricName = self.__metricsTabs.tabText(index)
-    print 'User selected metric ', metricName,
-    print ' corresponding results volume: ', self.__metricsVolumes[metricName]
     sliceCompositeNodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceCompositeNode')
 
     for s in range(0,sliceCompositeNodes.GetNumberOfItems()):
@@ -180,17 +159,10 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     '''
     volume render change detection results
     '''
-    # return
-
-    print 'Changes volume to render: ',labelID
     labelVolume = slicer.mrmlScene.GetNodeByID(labelID)
-    print 'Label volume: ',labelVolume
-    print ' ... and its display node: ',labelVolume.GetDisplayNode()
 
     self.__vrDisplayNode.SetAndObserveVolumeNodeID(labelID)
     self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, labelVolume)
-
-    print 'Display node id:',self.__vrDisplayNode.GetID()
 
     vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
     vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
