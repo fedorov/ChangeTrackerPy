@@ -114,10 +114,8 @@ class ChangeTrackerWidget:
     for s in allSteps:
         s.setWorkflow( self.workflow )
         s.setParameterNode (self.parameterNode)
-    '''
-        s.setLogic( self.logic() )
-        s.setMRMLManager( self.mrmlManager() )
-    '''
+        #s.setLogic( self.logic() )
+        #s.setMRMLManager( self.mrmlManager() )
 
     # restore workflow step
     currentStep = self.parameterNode.GetParameter('currentStep')

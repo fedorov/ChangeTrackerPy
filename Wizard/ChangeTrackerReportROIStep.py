@@ -123,13 +123,16 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     print 'Layout prepared'
 
+    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
+    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
+
     '''
     setup for volume rendering
     '''
 
-    messageBox = qt.QMessageBox.warning( self, 'Check Mantis!', 'Volume rendering of the result has been disabled pending resolution of bug #1528' )
+    #messageBox = qt.QMessageBox.warning( self, 'Check Mantis!', 'Volume rendering of the result has been disabled pending resolution of bug #1528' )
 
-    '''
+    #'''
     if self.__vrDisplayNode == None:
       print 'Creating display node in the last step'
       self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
@@ -138,7 +141,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
 
     print 'Volume rendering node created'
-    '''
+    #'''
 
     '''
     trigger volume rendering and label update
@@ -169,13 +172,15 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
         scNode.SetLabelVolumeID(self.__metricsVolumes[metricName])
         scNode.SetLinkedControl(1)
     
+    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
+    
     self.showChangeMapVolumeRendering(self.__metricsVolumes[metricName])
 
   def showChangeMapVolumeRendering(self, labelID):
     '''
     volume render change detection results
     '''
-    return
+    # return
 
     print 'Changes volume to render: ',labelID
     labelVolume = slicer.mrmlScene.GetNodeByID(labelID)
@@ -210,7 +215,10 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     roiNodeID = self.parameterNode().GetParameter('roiNodeID')
     if roiNodeID != '':
-      self.SetAndObserveROINodeID(roiNodeID)
-      self.SetCroppingEnabled(0);
+      self.__vrDisplayNode.SetAndObserveROINodeID(roiNodeID)
+      self.__vrDisplayNode.SetCroppingEnabled(0);
+
+    # label map rendering looks better with shading
+    self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().SetShade(1)
 
     self.__vrDisplayNode.VisibilityOn()
