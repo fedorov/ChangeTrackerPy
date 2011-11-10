@@ -147,10 +147,13 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
   def onExit(self, goingTo, transitionType):
     '''
-    Reset crosshairs
+    Reset crosshairs and turn off volume rendering
     '''
     if self.__xnode != None:
       self.__xnode.SetCrosshairMode(0)
+
+    if self.__vrDisplayNode != None:
+      self.__vrDisplayNode.VisibilityOff()
 
     super(ChangeTrackerReportROIStep, self).onExit(goingTo, transitionType)
 
