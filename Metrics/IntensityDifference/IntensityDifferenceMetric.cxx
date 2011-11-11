@@ -199,7 +199,6 @@ int main( int argc, char ** argv )
   CalculateRegionHistograms(diffImage, shrinkMask, histPosShrink, cumHistPosShrink, histNegShrink, cumHistNegShrink);
   std::cout << "Growth region" << std::endl;
   CalculateRegionHistograms(diffImage, growthMask, histPosGrowth, cumHistPosGrowth, histNegGrowth, cumHistNegGrowth);
-  SaveImage(diffImage, "diff.nrrd");
 
   std::cout << "Stable region bounds: -" << histNegStable.size()-1 << " to " << histPosStable.size()-1 << std::endl;
   std::cout << "Changing region bounds: -" << histNegDiff.size()-1 << " to " << histPosDiff.size()-1 << std::endl;

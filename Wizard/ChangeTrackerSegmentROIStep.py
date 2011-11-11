@@ -32,7 +32,6 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
   def createUserInterface( self ):
     '''
     '''
-    print 'SegmentROI create interface'
 #    self.buttonBoxHints = self.ButtonBoxHidden
 
     self.__layout = self.__parent.createUserInterface()
@@ -129,11 +128,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
   def onEntry(self, comingFrom, transitionType):
     '''
-    Resample the baseline volume using ROI
-
-    TODO: if coming from the next step, do not resample!
-
-    TODO: this should go to onExit() in the previous step!
+    Update GUI and visualization
     '''
     super(ChangeTrackerSegmentROIStep, self).onEntry(comingFrom, transitionType)
 
@@ -200,7 +195,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     baselineROIVolume = Helper.getNodeByID(pNode.GetParameter('croppedBaselineVolumeID'))
     baselineROIRange = baselineROIVolume.GetImageData().GetScalarRange()
     self.__threshRange.minimum = baselineROIRange[0]
-    self.__threshRange.minimum = baselineROIRange[1]
+    self.__threshRange.maximum = baselineROIRange[1]
 
     if pNode.GetParameter('useSegmentationThresholds') == 'True':
       self.__useThresholds = True
