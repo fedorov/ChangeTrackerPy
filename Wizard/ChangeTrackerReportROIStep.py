@@ -16,6 +16,8 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     self.__vrOpacityMap = None
     self.__vrLogic = slicer.modules.volumerendering.logic()
 
+    self.__xnode = None
+
     self.__parent = super( ChangeTrackerReportROIStep, self )
 
   def createUserInterface( self ):
@@ -55,16 +57,11 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     i = 0
 
     metricsList = string.split(metrics,',')
-    print 'Total metrics: ',len(metricsList)
-
-    print 'Metrics volumes ids = ', metricsVolumesIDs
-    print 'Metrics = ', metricsList
 
     if len(metricsVolumesIDs) != len(metricsList):
       Helper.Error('Missing metric processing results!')
 
     for m in metricsList:
-      print 'Adding tab for metric ',m
       metricWidget = qt.QWidget()
       metricLayout = qt.QFormLayout(metricWidget)
       textWidget = qt.QTextEdit()
@@ -77,12 +74,9 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
       metricLayout.addRow(textWidget)
       self.__metricsTabs.addTab(metricWidget, m)
       self.__metricTabsList[m] = textWidget
-      print 'Finished preparing for ', m
       i = i+1
 
     self.__metricsTabs.connect("currentChanged(int)", self.onTabChanged)
-    print 'Creating user interface for last step -- DONE!'
-
 
     # change the layout to Compare
     lm = slicer.app.layoutManager()
@@ -121,27 +115,26 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
         scNode.SetLabelVolumeID('')
         scNode.SetLinkedControl(1)
 
-    print 'Layout prepared'
+    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
 
-    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
-    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
+    # Enable crosshairs
+    # Is there only one crosshair node?
+    xnodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLCrosshairNode')
+    self.__xnode = xnodes.GetItemAsObject(0)
+    if self.__xnode != None:
+      self.__xnode.SetCrosshairMode(5)
+    else:
+      print 'Failed to find crosshair node!'
+
 
     '''
     setup for volume rendering
     '''
-
-    #messageBox = qt.QMessageBox.warning( self, 'Check Mantis!', 'Volume rendering of the result has been disabled pending resolution of bug #1528' )
-
-    #'''
     if self.__vrDisplayNode == None:
-      print 'Creating display node in the last step'
       self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
       viewNode = slicer.util.getNode('vtkMRMLViewNode1')
-      self.__vrDisplayNode.SetCurrentVolumeMapper(2)
+      self.__vrDisplayNode.SetCurrentVolumeMapper(0)
       self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
-
-    print 'Volume rendering node created'
-    #'''
 
     '''
     trigger volume rendering and label update
@@ -152,11 +145,22 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     Helper.Info('Report step: leaving onEntry()')
 
+  def onExit(self, goingTo, transitionType):
+    '''
+    Reset crosshairs and turn off volume rendering
+    '''
+    if self.__xnode != None:
+      self.__xnode.SetCrosshairMode(0)
+
+    if self.__vrDisplayNode != None:
+      self.__vrDisplayNode.VisibilityOff()
+
+    super(ChangeTrackerReportROIStep, self).onExit(goingTo, transitionType)
+
+
   def onTabChanged(self, index):
 
     metricName = self.__metricsTabs.tabText(index)
-    print 'User selected metric ', metricName,
-    print ' corresponding results volume: ', self.__metricsVolumes[metricName]
     sliceCompositeNodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceCompositeNode')
 
     for s in range(0,sliceCompositeNodes.GetNumberOfItems()):
@@ -180,39 +184,13 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     '''
     volume render change detection results
     '''
-    # return
-
-    print 'Changes volume to render: ',labelID
     labelVolume = slicer.mrmlScene.GetNodeByID(labelID)
-    print 'Label volume: ',labelVolume
-    print ' ... and its display node: ',labelVolume.GetDisplayNode()
 
     self.__vrDisplayNode.SetAndObserveVolumeNodeID(labelID)
     self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, labelVolume)
 
-    print 'Display node id:',self.__vrDisplayNode.GetID()
-
     vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
     vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
-    
-    # setup color transfer function once
-    vrColorMap.RemoveAllPoints()
-    vrColorMap.AddRGBPoint(11, 0, 0, 0) 
-    vrColorMap.AddRGBPoint(12, 0.2, 0.8, 0.5) 
-    vrColorMap.AddRGBPoint(12.1, 0, 0, 0) 
-    vrColorMap.AddRGBPoint(13.9, 0, 0, 0) 
-    vrColorMap.AddRGBPoint(14, 0.8, 0.2, 0.5) 
-    vrColorMap.AddRGBPoint(15, 0, 0, 0) 
-
-    vrOpacityMap.RemoveAllPoints()
-    vrOpacityMap.AddPoint(0,0)
-    vrOpacityMap.AddPoint(11,0)
-    vrOpacityMap.AddPoint(12,1)
-    vrOpacityMap.AddPoint(12.1,0)
-    vrOpacityMap.AddPoint(13.9,0)
-    vrOpacityMap.AddPoint(14,1)
-    vrOpacityMap.AddPoint(15,0)
-
     roiNodeID = self.parameterNode().GetParameter('roiNodeID')
     if roiNodeID != '':
       self.__vrDisplayNode.SetAndObserveROINodeID(roiNodeID)
