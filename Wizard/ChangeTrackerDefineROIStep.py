@@ -153,7 +153,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     image = self.__baselineVolume.GetImageData()
     clipper = vtk.vtkImageClip()
     clipper.ClipDataOn()
-    clipper.SetOutputWholeExtent(lowerIJK[0],upperIJK[0],lowerIJK[1],upperIJK[1],lowerIJK[2],upperIJK[2])
+    clipper.SetOutputWholeExtent(int(lowerIJK[0]),int(upperIJK[0]),int(lowerIJK[1]),int(upperIJK[1]),int(lowerIJK[2]),int(upperIJK[2]))
     clipper.SetInput(image)
     clipper.Update()
 
