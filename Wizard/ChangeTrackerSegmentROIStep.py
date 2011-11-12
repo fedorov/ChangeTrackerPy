@@ -33,7 +33,6 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
   def killButton(self):
     # hide useless button
     bl = slicer.util.findChildren(text='ReportROI')
-    print 'Buttons found: ',bl
     if len(bl):
       bl[0].hide()
 
