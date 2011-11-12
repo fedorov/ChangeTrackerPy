@@ -28,6 +28,15 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
     self.__roiSegmentationNode = None
     self.__roiVolume = None
+    qt.QTimer.singleShot(0, self.killButton)
+
+  def killButton(self):
+    # hide useless button
+    bl = slicer.util.findChildren(text='ReportROI')
+    print 'Buttons found: ',bl
+    if len(bl):
+      bl[0].hide()
+
 
   def createUserInterface( self ):
     '''
@@ -118,6 +127,9 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.__parent.validationSucceeded(desiredBranchId)
 
   def onExit(self, goingTo, transitionType):
+    if goingTo.id() != 'DefineROI' and goingTo.id() != 'AnalyzeROI':
+      return
+
     self.__vrDisplayNode.VisibilityOff()
 
     pNode = self.parameterNode()
@@ -189,6 +201,8 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     self.onThresholdChanged()
     
     pNode.SetParameter('currentStep', self.stepid)
+    
+    qt.QTimer.singleShot(0, self.killButton)
 
   def updateWidgetFromParameters(self, pNode):
   

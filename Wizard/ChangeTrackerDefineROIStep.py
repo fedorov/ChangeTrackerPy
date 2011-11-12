@@ -21,6 +21,15 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     self.__roi = None
     self.__roiObserverTag = None
 
+    qt.QTimer.singleShot(0, self.killButton)
+
+  def killButton(self):
+    # hide useless button
+    bl = slicer.util.findChildren(text='ReportROI')
+    print 'killButton: Buttons found: ',bl
+    if len(bl):
+      bl[0].hide()
+
   def createUserInterface( self ):
     '''
     '''
@@ -51,6 +60,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     self.__vrLogic = slicer.modules.volumerendering.logic()
 
     # self.updateWidgetFromParameters(self.parameterNode())
+    qt.QTimer.singleShot(0, self.killButton)
 
   def onROIChanged(self):
     roi = self.__roiSelector.currentNode()
@@ -202,9 +212,13 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       self.__roi.VisibleOn()
 
     pNode.SetParameter('currentStep', self.stepid)
+    
+    qt.QTimer.singleShot(0, self.killButton)
 
 # setup interface
   def onExit(self, goingTo, transitionType):
+    if goingTo.id() != 'SegmentROI' and goingTo.id() != 'SelectScans':
+      return
     # TODO: add storeWidgetStateToParameterNode() -- move all pNode-related stuff
     # there?
     if self.__roi != None:

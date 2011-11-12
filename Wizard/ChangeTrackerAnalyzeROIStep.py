@@ -17,6 +17,16 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     self.__parent = super( ChangeTrackerAnalyzeROIStep, self )
 
+    qt.QTimer.singleShot(0, self.killButton)
+
+  def killButton(self):
+    # hide useless button
+    bl = slicer.util.findChildren(text='ReportROI')
+    print 'Buttons found: ',bl
+    if len(bl):
+      bl[0].hide()
+
+
   def createUserInterface( self ):
     '''
     '''
@@ -129,8 +139,12 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     pNode = self.parameterNode()
     pNode.SetParameter('currentStep', self.stepid)
+    
+    qt.QTimer.singleShot(0, self.killButton)
 
   def onExit(self, goingTo, transitionType):
+    if goingTo.id() != 'SegmentROI' and goingTo.id() != 'ReportROI':
+      return
     '''
     Do the processing for this step here
     '''
@@ -181,6 +195,26 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
   def doStepProcessing(self):
     print 'Step processing'
+    
+    '''
+    This is currently disabled, because:
+     1) progress dialog needs to be repainted continuously, which ...
+     2) requires running cli in asynchronous mode, which in turns somehow
+        messes up the results!
+
+    # pop up progress dialog to prevent user from messing around
+    self.progress = qt.QProgressDialog(slicer.util.mainWindow())
+    self.progress.minimumDuration = 0
+    self.progress.show()
+    self.progress.setValue(0)
+    self.progress.setMaximum(0)
+    self.progress.setCancelButton(0)
+ 
+    self.progress.setLabelText('Registering followup image to baseline')
+    slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
+    self.progress.repaint()
+    '''
+
     '''
     Step logic:
       1) register followup to baseline
@@ -207,12 +241,26 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       parameters["useScaleSkewVersor3D"] = True
       parameters["useAffine"] = True
       parameters["linearTransform"] = self.__followupTransform.GetID()
+      # this is redundant actually, because this option affects only bspline
+      #   computation, which is not used
+      parameters["forceMINumberOfThreads"] = 0
 
       # FIXME: make sure brainsfit is available first?
       cliNode = None
       cliNode = slicer.cli.run(slicer.modules.brainsfit, cliNode, parameters, wait_for_completion = True)
       
       status = cliNode.GetStatusString()
+
+      '''
+      while status != 'Completed':
+      # while status == 'Running' or status == 'Scheduled' or status == 'Idle':
+        slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
+        self.progress.repaint()
+        status = cliNode.GetStatusString()
+
+      print 'Registration completed: status = ', status
+      '''
+
       if status == 'Completed':
         Helper.Info('registration completed OK')
       else:
@@ -303,3 +351,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
     Helper.Info('Selected metrics: '+pNode.GetParameter('metrics'))
     Helper.Info('Metrics processing results:'+pNode.GetParameter('resultVolumes'))
+
+    '''
+    # close the progress window 
+    self.progress.close()
+    self.progress = None
+    '''

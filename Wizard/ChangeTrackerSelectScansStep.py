@@ -42,6 +42,15 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
 
     self.updateWidgetFromParameters(self.parameterNode())
 
+    qt.QTimer.singleShot(0, self.killButton)
+
+  def killButton(self):
+    # hide useless button
+    bl = slicer.util.findChildren(text='ReportROI')
+    print 'Buttons found: ',bl
+    if len(bl):
+      bl[0].hide()
+
   def loadData(self):
     vl = slicer.modules.volumes.logic()
     vol1 = vl.AddArchetypeVolume('http://www.slicer.org/slicerWiki/images/5/59/RegLib_C01_1.nrrd', 'Meningioma1', 0)
@@ -76,13 +85,21 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
       self.__parent.validationFailed(desiredBranchId, 'Error','Please select both baseline and followup volumes!')
 
   def onEntry(self, comingFrom, transitionType):
+
     super(ChangeTrackerSelectScansStep, self).onEntry(comingFrom, transitionType)
     self.updateWidgetFromParameters(self.parameterNode())
     pNode = self.parameterNode()
     pNode.SetParameter('currentStep', self.stepid)
+    
+    qt.QTimer.singleShot(0, self.killButton)
 
   def onExit(self, goingTo, transitionType):
     self.doStepProcessing()
+    
+    # extra error checking, in case the user manages to click ReportROI button
+    if goingTo.id() != 'DefineROI':
+      return
+
     super(ChangeTrackerSelectScansStep, self).onExit(goingTo, transitionType) 
 
   def updateWidgetFromParameters(self, parameterNode):

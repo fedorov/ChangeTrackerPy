@@ -16,8 +16,8 @@ class Helper( object ):
     
     '''
 
-    print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: " + str( message )
-    sys.stdout.flush()
+    #print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: " + str( message )
+    #sys.stdout.flush()
 
   @staticmethod
   def Warning( message ):
@@ -25,8 +25,8 @@ class Helper( object ):
     
     '''
 
-    print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: WARNING: " + str( message )
-    sys.stdout.flush()
+    #print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: WARNING: " + str( message )
+    #sys.stdout.flush()
 
   @staticmethod
   def Error( message ):
@@ -44,7 +44,7 @@ class Helper( object ):
     
     '''
 
-    showDebugOutput = 1
+    showDebugOutput = 0
     from time import strftime
     if showDebugOutput:
         print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "] DEBUG: " + str( message )

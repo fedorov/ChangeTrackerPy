@@ -19,6 +19,15 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     self.__xnode = None
 
     self.__parent = super( ChangeTrackerReportROIStep, self )
+    qt.QTimer.singleShot(0, self.killButton)
+
+  def killButton(self):
+    # hide useless button
+    bl = slicer.util.findChildren(text='ReportROI')
+    print 'Buttons found: ',bl
+    if len(bl):
+      bl[0].hide()
+
 
   def createUserInterface( self ):
     '''
@@ -144,6 +153,8 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     pNode.SetParameter('currentStep', self.stepid)
 
     Helper.Info('Report step: leaving onEntry()')
+    
+    qt.QTimer.singleShot(0, self.killButton)
 
   def onExit(self, goingTo, transitionType):
     '''
