@@ -213,6 +213,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     self.progress.setValue(0)
     self.progress.setMaximum(0)
     self.progress.setCancelButton(0)
+    self.progress.setWindowModality(2)
  
     self.progress.setLabelText('Registering followup image to baseline')
     slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
