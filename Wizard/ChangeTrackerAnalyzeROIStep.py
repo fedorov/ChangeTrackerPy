@@ -218,6 +218,8 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     self.progress.setLabelText('Registering followup image to baseline')
     slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
     self.progress.repaint()
+    
+    qt.QTimer.singleShot(0, self.updateProgress)
 
     '''
     Step logic:
@@ -361,6 +363,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     Helper.Info('Metrics processing results:'+pNode.GetParameter('resultVolumes'))
 
     # close the progress window 
+    timer.stop()
     self.progress.setValue(2)
     self.progress.close()
     self.progress = None
