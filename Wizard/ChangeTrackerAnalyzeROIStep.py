@@ -193,14 +193,19 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     else:
       pNode.SetParameter('followupTransformID', '')
 
+
+  def updateProgress(self):
+    print 'updateProgress() !!!'
+    slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
+    self.progress.repaint()
+
   def doStepProcessing(self):
     print 'Step processing'
     
-    '''
-    This is currently disabled, because:
-     1) progress dialog needs to be repainted continuously, which ...
-     2) requires running cli in asynchronous mode, which in turns somehow
-        messes up the results!
+    timer = qt.QTimer()
+    timer.setInterval(1000)
+    timer.setSingleShot(0)
+    timer.connect('timeout()', self.updateProgress)
 
     # pop up progress dialog to prevent user from messing around
     self.progress = qt.QProgressDialog(slicer.util.mainWindow())
@@ -213,7 +218,6 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     self.progress.setLabelText('Registering followup image to baseline')
     slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
     self.progress.repaint()
-    '''
 
     '''
     Step logic:
@@ -271,6 +275,10 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       print 'AnalyzeROIStep: registration completed!'
     else:
       print 'AnalyzeROIStep: registration not required!'
+
+    self.progress.setLabelText('Estimating changes')
+    slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
+    self.progress.repaint()
 
     # self.__cliObserverTag = self.__cliNode.AddObserver('ModifiedEvent', self.processRegistrationCompletion)
     # self.__registrationStatus.setText('Wait ...')
@@ -352,8 +360,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     Helper.Info('Selected metrics: '+pNode.GetParameter('metrics'))
     Helper.Info('Metrics processing results:'+pNode.GetParameter('resultVolumes'))
 
-    '''
     # close the progress window 
+    self.progress.setValue(2)
     self.progress.close()
     self.progress = None
-    '''
