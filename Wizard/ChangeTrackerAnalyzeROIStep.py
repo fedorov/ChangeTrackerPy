@@ -243,9 +243,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       parameters["movingVolume"] = followupVolumeID
       parameters["initializeTransformMode"] = "useMomentsAlign"
       parameters["useRigid"] = True
-      parameters["useScaleVersor3D"] = True
-      parameters["useScaleSkewVersor3D"] = True
-      parameters["useAffine"] = True
+      parameters["useScaleVersor3D"] = False
+      parameters["useScaleSkewVersor3D"] = False
+      parameters["useAffine"] = False
       parameters["linearTransform"] = self.__followupTransform.GetID()
       # this is redundant actually, because this option affects only bspline
       #   computation, which is not used
