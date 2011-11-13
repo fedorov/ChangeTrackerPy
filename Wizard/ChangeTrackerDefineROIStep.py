@@ -276,16 +276,15 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     roiSegmentationID = pNode.GetParameter('croppedBaselineVolumeSegmentationID') 
     if roiSegmentationID == '':
-      # otherwise, nothing to be done here
-      vl = slicer.modules.volumes.logic()
-      roiSegmentation = vl.CreateLabelVolume(slicer.mrmlScene, outputVolume, 'baselineROI_segmentation')
       roiRange = outputVolume.GetImageData().GetScalarRange()
 
       # default threshold is half-way of the range
       thresholdParameter = str(0.5*(roiRange[0]+roiRange[1]))+','+str(roiRange[1])
       pNode.SetParameter('thresholdRange', thresholdParameter)
       pNode.SetParameter('useSegmentationThresholds', 'True')
-      pNode.SetParameter('croppedBaselineVolumeSegmentationID', roiSegmentation.GetID())
 
-
-
+    # even if the seg. volume exists, it needs to be updated, because ROI
+    # could have changed
+    vl = slicer.modules.volumes.logic()
+    roiSegmentation = vl.CreateLabelVolume(slicer.mrmlScene, outputVolume, 'baselineROI_segmentation')
+    pNode.SetParameter('croppedBaselineVolumeSegmentationID', roiSegmentation.GetID())
