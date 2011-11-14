@@ -245,7 +245,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       parameters["useRigid"] = True
       parameters["useScaleVersor3D"] = False
       parameters["useScaleSkewVersor3D"] = False
-      parameters["useAffine"] = False
+      parameters["useAffine"] = True
       parameters["linearTransform"] = self.__followupTransform.GetID()
       # this is redundant actually, because this option affects only bspline
       #   computation, which is not used
