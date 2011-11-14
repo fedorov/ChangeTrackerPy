@@ -258,7 +258,9 @@ int main( int argc, char ** argv )
   itDiff.GoToBegin();itDiffMask.GoToBegin();
   itGrowthMask.GoToBegin();itShrinkMask.GoToBegin();
 
+  ImageType::Pointer segMask = readerS->GetOutput();
   int cdSegGrowthCnt = 0, cdSegShrinkCnt = 0, cdNoSegGrowthCnt = 0, cdNoSegShrinkCnt = 0;
+  int totalSegCnt = 0;
   for(;!itDiff.IsAtEnd();++itDiff,++itDiffMask,++itGrowthMask,++itShrinkMask){
     if(abs(itDiff.Get())<cutoffThresh)
       continue;
@@ -279,6 +281,8 @@ int main( int argc, char ** argv )
         cdSeg->SetPixel(itDiff.GetIndex(),12);
       }
     }
+    if(segMask->GetPixel(itDiff.GetIndex()))
+      totalSegCnt++;
   }
  
   // only those pixels connected to the margin of the structure segmentation
@@ -301,6 +305,9 @@ int main( int argc, char ** argv )
 
   ImageType::SpacingType spacing = diffImage->GetSpacing();
   float pixelVol = spacing[0]*spacing[1]*spacing[2];
+  float percentGrowth = ((float)cdSegGrowthCnt)/totalSegCnt;
+  float percentShrink = ((float)cdSegShrinkCnt)/totalSegCnt;
+  float percentTotal = ((float)cdSegGrowthCnt-cdSegShrinkCnt)/totalSegCnt;
   std::cout << "cdNoSeg: growthVol = " << pixelVol*cdNoSegGrowthCnt << ", shrinkVol = " << pixelVol*cdNoSegShrinkCnt << "mm^3" << std::endl;
   std::cout << "cdSeg: growthVol = " << pixelVol*cdSegGrowthCnt << ", shrinkVol = " << pixelVol*cdSegShrinkCnt << "mm^3" << std::endl;
   std::cout << "cdNoSeg: growthCnt = " << cdNoSegGrowthCnt << ", shrinkCnt = " << cdNoSegShrinkCnt << std::endl;
@@ -308,14 +315,9 @@ int main( int argc, char ** argv )
 
   if(reportFileName != ""){
     std::ofstream report(reportFileName.c_str());
-    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#ff0000;\">Growth</span>: " << cdSegGrowthCnt*pixelVol << " mm<sup>3 </sup></strong>(" << cdSegGrowthCnt << " pixels)</span></p>";
-    report << "<p><span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#008000;\">Shrinkage</span>: " << cdSegShrinkCnt*pixelVol << " mm<sup>3&nbsp;</sup></strong>(" << cdSegShrinkCnt << " pixels)</span></p><p>";
-    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong>Total: " <<  (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol << " mm<sup>3&nbsp;</sup></strong>(" << cdSegGrowthCnt-cdSegShrinkCnt << " pixels)</span></p>";
-    /*
-    report << "Growth: " << cdSegGrowthCnt*pixelVol << " mm^3 (" << cdSegGrowthCnt << " voxels)" << std::endl;
-    report << "Shrinkage: " << cdSegShrinkCnt*pixelVol << " mm^3 (" << cdSegShrinkCnt << " voxels)" << std::endl;
-    report << "Total: " << (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol << " mm^3 (" << cdSegGrowthCnt-cdSegShrinkCnt << " voxels)" << std::endl;
-    */
+    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#ff0000;\">Growth</span>: " << cdSegGrowthCnt*pixelVol/1000. << " mL </sup></strong>(" << cdSegGrowthCnt << " pixels), or " << percentGrowth << "&#37; </span></p>";
+    report << "<p><span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#008000;\">Shrinkage</span>: " << cdSegShrinkCnt*pixelVol/1000. << " mL </strong>(" << cdSegShrinkCnt << " pixels), or " << percentShrink << "&#37; </span></p><p>";
+    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong>Total: " <<  (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol/1000. << " mL </strong>(" << cdSegGrowthCnt-cdSegShrinkCnt << " pixels), or " << percentTotal << "&#37; </span></p>";
   }
  
 //  SaveImage(cdNoSeg, "/tmp/cdNoSegResult.nrrd");
