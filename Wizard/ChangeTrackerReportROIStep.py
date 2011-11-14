@@ -139,10 +139,13 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     setup for volume rendering
     '''
     if self.__vrDisplayNode == None:
-      self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
-      viewNode = slicer.util.getNode('vtkMRMLViewNode1')
-      self.__vrDisplayNode.SetCurrentVolumeMapper(0)
-      self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
+      # self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
+      # reuse existing node
+      vrDisplayNodeID = pNode.GetParameter('vrDisplayNodeID')
+      self.__vrDisplayNode = slicer.mrmlScene.GetNodeByID(vrDisplayNodeID)
+      #viewNode = slicer.util.getNode('vtkMRMLViewNode1')
+      #self.__vrDisplayNode.SetCurrentVolumeMapper(0)
+      #self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
 
     '''
     trigger volume rendering and label update
@@ -198,6 +201,9 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     self.__vrDisplayNode.SetAndObserveVolumeNodeID(labelID)
     self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, labelVolume)
+    # logic will create a new ROI node, hide it
+    newROI = self.__vrDisplayNode.GetROINode()
+    newROI.VisibleOff()
 
     vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
     vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()

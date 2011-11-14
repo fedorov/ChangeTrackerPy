@@ -71,7 +71,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       if self.__vrDisplayNode == None:
         self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
         viewNode = slicer.util.getNode('vtkMRMLViewNode1')
-        self.__vrDisplayNode.SetCurrentVolumeMapper(2)
+        self.__vrDisplayNode.SetCurrentVolumeMapper(0)
         self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
 
         v = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
@@ -223,10 +223,12 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     if self.__roi != None:
       self.__roi.RemoveObserver(self.__roiObserverTag)
       self.__roi.VisibleOff()
+    
+    pNode = self.parameterNode()
     if self.__vrDisplayNode != None:
       self.__vrDisplayNode.VisibilityOff()
+      pNode.SetParameter('vrDisplayNodeID', self.__vrDisplayNode.GetID())
 
-    pNode = self.parameterNode()
     pNode.SetParameter('roiNodeID', self.__roiSelector.currentNode().GetID())
 
     if goingTo.id() == 'SegmentROI':
