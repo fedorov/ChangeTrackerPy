@@ -192,19 +192,22 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     else:
       pNode.SetParameter('followupTransformID', '')
 
-
+  '''
   def updateProgress(self):
     print 'updateProgress() !!!'
     slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
     self.progress.repaint()
+  '''
 
   def doStepProcessing(self):
     print 'Step processing'
     
+    '''
     timer = qt.QTimer()
     timer.setInterval(1000)
     timer.setSingleShot(0)
     timer.connect('timeout()', self.updateProgress)
+    '''
 
     # pop up progress dialog to prevent user from messing around
     self.progress = qt.QProgressDialog(slicer.util.mainWindow())
@@ -363,7 +366,11 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     Helper.Info('Metrics processing results:'+pNode.GetParameter('resultVolumes'))
 
     # close the progress window 
+    '''
     timer.stop()
+    '''
     self.progress.setValue(2)
+    self.progress.repaint()
+    slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
     self.progress.close()
     self.progress = None
