@@ -29,6 +29,7 @@
 
 #include "IntensityDifferenceMetricCLP.h"
 
+#include <iomanip>
 
 #include "itkImage.h"
 
@@ -315,9 +316,10 @@ int main( int argc, char ** argv )
 
   if(reportFileName != ""){
     std::ofstream report(reportFileName.c_str());
-    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#ff0000;\">Growth</span>: " << cdSegGrowthCnt*pixelVol/1000. << " mL </sup></strong>(" << cdSegGrowthCnt << " pixels), or " << percentGrowth << "&#37; </span></p>";
-    report << "<p><span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#008000;\">Shrinkage</span>: " << cdSegShrinkCnt*pixelVol/1000. << " mL </strong>(" << cdSegShrinkCnt << " pixels), or " << percentShrink << "&#37; </span></p><p>";
-    report << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong>Total: " <<  (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol/1000. << " mL </strong>(" << cdSegGrowthCnt-cdSegShrinkCnt << " pixels), or " << percentTotal << "&#37; </span></p>";
+    report << fixed;
+    report << std::setprecision(2) << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#ff0000;\">Growth</span>: " << cdSegGrowthCnt*pixelVol/1000. << " mL </sup></strong>(" << cdSegGrowthCnt << " pixels), or " << percentGrowth << "&#37; </span></p>";
+    report << std::setprecision(2) << "<p><span style=\"font-family:arial,helvetica,sans-serif;\"><strong><span style=\"color:#008000;\">Shrinkage</span>: " << cdSegShrinkCnt*pixelVol/1000. << " mL </strong>(" << cdSegShrinkCnt << " pixels), or " << percentShrink << "&#37; </span></p><p>";
+    report << std::setprecision(2) << "<span style=\"font-family:arial,helvetica,sans-serif;\"><strong>Total: " <<  (cdSegGrowthCnt-cdSegShrinkCnt)*pixelVol/1000. << " mL </strong>(" << cdSegGrowthCnt-cdSegShrinkCnt << " pixels), or " << percentTotal << "&#37; </span></p>";
   }
  
 //  SaveImage(cdNoSeg, "/tmp/cdNoSegResult.nrrd");
