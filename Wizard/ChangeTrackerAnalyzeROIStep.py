@@ -222,7 +222,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
     self.progress.repaint()
     
-    qt.QTimer.singleShot(0, self.updateProgress)
+    # qt.QTimer.singleShot(0, self.updateProgress)
 
     '''
     Step logic:
