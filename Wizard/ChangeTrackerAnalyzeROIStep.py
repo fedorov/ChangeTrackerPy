@@ -250,9 +250,8 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       parameters["useScaleSkewVersor3D"] = False
       parameters["useAffine"] = True
       parameters["linearTransform"] = self.__followupTransform.GetID()
-      # this is redundant actually, because this option affects only bspline
-      #   computation, which is not used
-      parameters["forceMINumberOfThreads"] = 0
+      # apparently this is needed even if not b-spline (see bug report 1542)
+      parameters["forceMINumberOfThreads"] = -1
 
       # FIXME: make sure brainsfit is available first?
       cliNode = None
