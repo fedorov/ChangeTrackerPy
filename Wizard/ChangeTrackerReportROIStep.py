@@ -46,6 +46,9 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     # check here that ROI is not empty and is within the baseline volume
     self.__parent.validationSucceeded(desiredBranchId)
 
+  def fitSlices(self):
+    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
+
   def onEntry(self, comingFrom, transitionType):
     Helper.Info('Report step: entering onEntry()')
     super(ChangeTrackerReportROIStep, self).onEntry(comingFrom, transitionType)
@@ -123,7 +126,8 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
         scNode.SetLabelVolumeID('')
         scNode.SetLinkedControl(1)
 
-    slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
+    qt.QTimer.singleShot(0, self.fitSlices)
+
 
     # Enable crosshairs
     # Is there only one crosshair node?
