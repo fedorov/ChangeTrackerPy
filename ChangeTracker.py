@@ -5,7 +5,7 @@ import ChangeTrackerWizard
 class ChangeTracker:
   def __init__( self, parent ):
     parent.title = """ChangeTracker"""
-    parent.category = """Wizards"""
+    parent.categories = ["""Wizards"""]
     parent.contributor = """Andrey Fedorov, Kilian Pohl, Peter Black, Ron Kikinis"""
     parent.helpText = """
     ChangeTracker facilitates estimation of small changes in the anatomy. The change is quantified in mL for growth/shrinkage, and is also visualized with tumor changes color-coded. The module documentation (work in progress) can be found here: <a href="http://wiki.slicer.org/slicerWiki/index.php/Documentation/4.0/Modules/ChangeTracker">http://wiki.slicer.org/slicerWiki/index.php/Documentation/4.0/Modules/ChangeTracker</a><br><br>To use the module, follow the workflow that consists of the 4 steps:<br><br>1. Select baseline and followup image volumes that you want to compare. Note that it is expected that the differences between the two images are not drastic (e.g., the module has not been tested to handle images pre/post resection, or with the large changes due to treatment)<br><br>2. Define the region of interest by placing the ROI widget appropriately.<br><br>3. Segment the structure of interest in the ROI. Currently, this is done using intensity threshold.<br><br>4. Choose the change detection metric and parameters, if necessary.<br><br>5. The results and quantification of changes are displayed.
