@@ -301,11 +301,11 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     parameters["interpolationType"] = "bs"
 
     cliNode = None
-    cliNode = slicer.cli.run(slicer.modules.resamplevolume2, cliNode, parameters, 1)
+    cliNode = slicer.cli.run(slicer.modules.resamplescalarvectordwivolume, cliNode, parameters, 1)
 
     status = cliNode.GetStatusString()
     if status == 'Completed':
-      Helper.Info('resampleVolume2 completed OK')
+      Helper.Info('ResampleScalarVectorDWIVolume completed OK')
       pNode.SetParameter('croppedFollowupVolumeID', followupVolumeROI.GetID())
     else:
       Helper.Error('Failed to resample!')
