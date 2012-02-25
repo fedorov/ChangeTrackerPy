@@ -230,7 +230,7 @@ int main( int argc, char ** argv )
   */
   
     std::cout << "Cutoff at " << sensitivityThreshold << std::endl;
-    for(int i=0;i<cumHistPosDiff.size();i++){
+    for(unsigned i=0;i<cumHistPosDiff.size();i++){
       if(cumHistPosDiff[i]>=sensitivityThreshold){
         cutoffThresh = i;
         break;
@@ -381,7 +381,6 @@ void CalculateRegionHistograms(ImageType::Pointer input, ImageType::Pointer mask
     }
   }
 
-  int posThresh = 0, negThresh = 0;
   for(i=0;i<histPos.size();i++){
     posCntCum += histPos[i];
     cumHistPos[i] = posCntCum/posCnt;
@@ -395,7 +394,7 @@ void CalculateRegionHistograms(ImageType::Pointer input, ImageType::Pointer mask
 
 void SaveHisto(std::vector<float> hist, const char* name){
   std::ofstream nhf(name);
-  for(int i=0;i<hist.size();i++){
+  for(unsigned i=0;i<hist.size();i++){
     nhf << i << " " << hist[i] << std::endl;
   }
 }
