@@ -264,8 +264,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     slicer.mrmlScene.AddNode(cropVolumeNode)
     # TODO hide from MRML tree
 
-    cropVolumeNode.SetAndObserveInputVolumeNodeID(pNode.GetParameter('baselineVolumeID'))
-    cropVolumeNode.SetAndObserveROINodeID(pNode.GetParameter('roiNodeID'))
+    cropVolumeNode.SetInputVolumeNodeID(pNode.GetParameter('baselineVolumeID'))
+    cropVolumeNode.SetROINodeID(pNode.GetParameter('roiNodeID'))
     # cropVolumeNode.SetAndObserveOutputVolumeNodeID(outputVolume.GetID())
 
     cropVolumeLogic = slicer.modules.cropvolume.logic()
