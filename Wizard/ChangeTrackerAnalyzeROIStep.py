@@ -272,7 +272,8 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       if status == 'Completed':
         Helper.Info('registration completed OK')
       else:
-        Helper.Error('Failed to register!')
+        Helper.ErrorPopup('Registration step failed. Unable to proceed. Please quit Slicer and report this issue including the output from the error log.')
+        return
 
       pNode.SetParameter('followupTransformID', self.__followupTransform.GetID())
 

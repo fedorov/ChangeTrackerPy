@@ -37,6 +37,13 @@ class Helper( object ):
     print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: ERROR: " + str( message )
     sys.stdout.flush()
 
+  @staticmethod
+  def ErrorPopup( message ):
+    '''
+    
+    '''
+    messageBox = qt.QMessageBox()
+    messageBox.critical(None,'',message)
 
   @staticmethod
   def Debug( message ):
