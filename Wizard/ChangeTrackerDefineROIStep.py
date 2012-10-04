@@ -62,30 +62,15 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     qt.QTimer.singleShot(0, self.killButton)
 
   def onROIChanged(self):
+
     roi = self.__roiSelector.currentNode()
 
     if roi != None:
+      self.__roi = roi
     
       pNode = self.parameterNode()
       # create VR node first time a valid ROI is selected
-      if self.__vrDisplayNode == None:
-        self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
-        viewNode = slicer.util.getNode('vtkMRMLViewNode1')
-        # This API has apparently been deprecated
-        # self.__vrDisplayNode.SetCurrentVolumeMapper(0)
-        self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
-
-        v = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
-        self.__vrDisplayNode.SetAndObserveVolumeNodeID(v.GetID())
-        self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, v)
-        self.__vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
-        self.__vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
-
-        # setup color transfer function once
-        self.__vrColorMap.RemoveAllPoints()
-        self.__vrColorMap.AddRGBPoint(0, 0.8, 0.8, 0)
-        self.__vrColorMap.AddRGBPoint(500, 0.8, 0.8, 0)
-
+      self.InitVRDisplayNode()
 
       # update VR settings each time ROI changes
       v = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
@@ -101,7 +86,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       if self.__roiObserverTag != None:
         self.__roi.RemoveObserver(self.__roiObserverTag)
 
-      self.__roi = slicer.mrmlScene.GetNodeByID(roi.GetID())
       self.__roiObserverTag = self.__roi.AddObserver('ModifiedEvent', self.processROIEvents)
 
       roi.SetInteractiveMode(1)
@@ -192,6 +176,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     lm.setLayout(3)
     pNode = self.parameterNode()
     Helper.SetBgFgVolumes(pNode.GetParameter('baselineVolumeID'),pNode.GetParameter('followupVolumeID'))
+    Helper.SetLabelVolume(None)
 
     # use this transform node to align ROI with the axes of the baseline
     # volume
@@ -211,11 +196,12 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     if self.__roi != None:
       self.__roi.VisibleOn()
 
+      self.InitVRDisplayNode()
+
     pNode.SetParameter('currentStep', self.stepid)
     
     qt.QTimer.singleShot(0, self.killButton)
 
-# setup interface
   def onExit(self, goingTo, transitionType):
     if goingTo.id() != 'SegmentROI' and goingTo.id() != 'SelectScans':
       return
@@ -291,3 +277,30 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     vl = slicer.modules.volumes.logic()
     roiSegmentation = vl.CreateLabelVolume(slicer.mrmlScene, outputVolume, 'baselineROI_segmentation')
     pNode.SetParameter('croppedBaselineVolumeSegmentationID', roiSegmentation.GetID())
+
+  def InitVRDisplayNode(self):
+    if self.__vrDisplayNode == None:
+      pNode = self.parameterNode()
+      vrNodeID = pNode.GetParameter('vrDisplayNodeID')
+      if vrNodeID == '':
+        self.__vrDisplayNode = slicer.modules.volumerendering.logic().CreateVolumeRenderingDisplayNode()
+        slicer.mrmlScene.AddNode(self.__vrDisplayNode)
+      else:
+        self.__vrDisplayNode = slicer.mrmlScene.GetNodeByID(vrNodeID)
+
+    viewNode = slicer.util.getNode('vtkMRMLViewNode1')
+    # This API has apparently been deprecated
+    # self.__vrDisplayNode.SetCurrentVolumeMapper(0)
+    self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
+
+    v = slicer.mrmlScene.GetNodeByID(self.parameterNode().GetParameter('baselineVolumeID'))
+
+    Helper.InitVRDisplayNode(self.__vrDisplayNode, v.GetID(), self.__roi.GetID())
+
+    self.__vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
+    self.__vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
+
+    # setup color transfer function once
+    self.__vrColorMap.RemoveAllPoints()
+    self.__vrColorMap.AddRGBPoint(0, 0.8, 0.8, 0)
+    self.__vrColorMap.AddRGBPoint(500, 0.8, 0.8, 0)

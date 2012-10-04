@@ -161,17 +161,15 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
     if self.__vrDisplayNode == None:
       if vrDisplayNodeID != '':
         self.__vrDisplayNode = slicer.mrmlScene.GetNodeByID(vrDisplayNodeID)
-        # self.__vrDisplayNode = self.__vrLogic.CreateVolumeRenderingDisplayNode()
-      #viewNode = slicer.util.getNode('vtkMRMLViewNode1')
-      #self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
-      #self.__vrDisplayNode.SetCurrentVolumeMapper(2)
 
     if self.__useThresholds:
-      self.__vrDisplayNode.SetAndObserveVolumeNodeID(roiVolume.GetID())
-      self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, roiVolume)
-      # logic will create a new ROI -- need to hide it
-      newROI = self.__vrDisplayNode.GetROINode()
-      newROI.VisibleOff()
+
+      roiNodeID = pNode.GetParameter('roiNodeID')
+      if roiNodeID == None:
+        Helper.Error('Failed to find ROI node -- it should have been defined in the previous step!')
+        return
+
+      Helper.InitVRDisplayNode(self.__vrDisplayNode, roiVolume.GetID(), roiNodeID)
 
       self.__vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
       vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()

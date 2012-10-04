@@ -94,6 +94,24 @@ class Helper( object ):
     appLogic.PropagateVolumeSelection()
 
   @staticmethod
+  def InitVRDisplayNode(vrDisplayNode, volumeID, roiID):
+    vrLogic = slicer.modules.volumerendering.logic()
+
+    print('ChangeTracker VR: will observe ID '+volumeID)
+    vrDisplayNode.SetAndObserveVolumeNodeID(volumeID)
+    propNode = vrDisplayNode.GetVolumePropertyNode()
+
+    if propNode == None:
+      propNode = slicer.vtkMRMLVolumePropertyNode()
+      slicer.mrmlScene.AddNode(propNode)
+    vrDisplayNode.SetAndObserveVolumePropertyNodeID(propNode.GetID())
+
+    vrDisplayNode.SetAndObserveROINodeID(roiID)
+
+    vrLogic.CopyDisplayToVolumeRenderingDisplayNode(vrDisplayNode)
+
+
+  @staticmethod
   def findChildren(widget=None,name="",text=""):
     """ return a list of child widgets that match the passed name """
     # TODO: figure out why the native QWidget.findChildren method

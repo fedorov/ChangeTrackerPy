@@ -203,9 +203,10 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     '''
     labelVolume = slicer.mrmlScene.GetNodeByID(labelID)
 
-    self.__vrDisplayNode.SetAndObserveVolumeNodeID(labelID)
-    self.__vrLogic.UpdateDisplayNodeFromVolumeNode(self.__vrDisplayNode, labelVolume)
-    # logic will create a new ROI node, hide it
+    pNode = self.parameterNode()
+    roiNodeID = pNode.GetParameter('roiNodeID')
+    Helper.InitVRDisplayNode(self.__vrDisplayNode, labelVolume.GetID(), roiNodeID)
+
     newROI = self.__vrDisplayNode.GetROINode()
     newROI.VisibleOff()
 
