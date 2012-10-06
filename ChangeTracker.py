@@ -93,10 +93,10 @@ class ChangeTrackerWidget:
     allSteps.append( self.reportROIStep )
 
     # Add transition for the first step which let's the user choose between simple and advanced mode
-    self.workflow.addTransition( self.selectScansStep, defineROIStep )
-    self.workflow.addTransition( self.defineROIStep, segmentROIStep )
-    self.workflow.addTransition( self.segmentROIStep, analyzeROIStep )
-    self.workflow.addTransition( self.analyzeROIStep, reportROIStep )
+    self.workflow.addTransition( self.selectScansStep, self.defineROIStep )
+    self.workflow.addTransition( self.defineROIStep, self.segmentROIStep )
+    self.workflow.addTransition( self.segmentROIStep, self.analyzeROIStep )
+    self.workflow.addTransition( self.analyzeROIStep, self.reportROIStep )
 
     nNodes = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLScriptedModuleNode')
 
