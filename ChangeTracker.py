@@ -86,17 +86,17 @@ class ChangeTrackerWidget:
     # add the wizard steps to an array for convenience
     allSteps = []
 
-    allSteps.append( selectScansStep )
-    allSteps.append( defineROIStep )
-    allSteps.append( segmentROIStep )
-    allSteps.append( analyzeROIStep )
-    allSteps.append( reportROIStep )
+    allSteps.append( self.selectScansStep )
+    allSteps.append( self.defineROIStep )
+    allSteps.append( self.segmentROIStep )
+    allSteps.append( self.analyzeROIStep )
+    allSteps.append( self.reportROIStep )
 
     # Add transition for the first step which let's the user choose between simple and advanced mode
-    self.workflow.addTransition( selectScansStep, defineROIStep )
-    self.workflow.addTransition( defineROIStep, segmentROIStep )
-    self.workflow.addTransition( segmentROIStep, analyzeROIStep )
-    self.workflow.addTransition( analyzeROIStep, reportROIStep )
+    self.workflow.addTransition( self.selectScansStep, defineROIStep )
+    self.workflow.addTransition( self.defineROIStep, segmentROIStep )
+    self.workflow.addTransition( self.segmentROIStep, analyzeROIStep )
+    self.workflow.addTransition( self.analyzeROIStep, reportROIStep )
 
     nNodes = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLScriptedModuleNode')
 
@@ -125,15 +125,15 @@ class ChangeTrackerWidget:
     if currentStep != '':
       print 'Restoring workflow step to ', currentStep
       if currentStep == 'SelectScans':
-        self.workflow.setInitialStep(selectScansStep)
+        self.workflow.setInitialStep(self.selectScansStep)
       if currentStep == 'DefineROI':
-        self.workflow.setInitialStep(defineROIStep)
+        self.workflow.setInitialStep(self.defineROIStep)
       if currentStep == 'SegmentROI':
-        self.workflow.setInitialStep(segmentROIStep)
+        self.workflow.setInitialStep(self.segmentROIStep)
       if currentStep == 'AnalyzeROI':
-        self.workflow.setInitialStep(analyzeROIStep)
+        self.workflow.setInitialStep(self.analyzeROIStep)
       if currentStep == 'ReportROI':
-        self.workflow.setInitialStep(reportROIStep)
+        self.workflow.setInitialStep(self.reportROIStep)
     else:
       print 'currentStep in parameter node is empty!'
         
