@@ -77,11 +77,11 @@ class ChangeTrackerWidget:
     workflowWidget.buttonBoxWidget().backButtonDefaultText = ""
     
     # create all wizard steps
-    selectScansStep = ChangeTrackerWizard.ChangeTrackerSelectScansStep( 'SelectScans'  )
-    defineROIStep = ChangeTrackerWizard.ChangeTrackerDefineROIStep( 'DefineROI'  )
-    segmentROIStep = ChangeTrackerWizard.ChangeTrackerSegmentROIStep( 'SegmentROI'  )
-    analyzeROIStep = ChangeTrackerWizard.ChangeTrackerAnalyzeROIStep( 'AnalyzeROI'  )
-    reportROIStep = ChangeTrackerWizard.ChangeTrackerReportROIStep( 'ReportROI'  )
+    self.selectScansStep = ChangeTrackerWizard.ChangeTrackerSelectScansStep( 'SelectScans'  )
+    self.defineROIStep = ChangeTrackerWizard.ChangeTrackerDefineROIStep( 'DefineROI'  )
+    self.segmentROIStep = ChangeTrackerWizard.ChangeTrackerSegmentROIStep( 'SegmentROI'  )
+    self.analyzeROIStep = ChangeTrackerWizard.ChangeTrackerAnalyzeROIStep( 'AnalyzeROI'  )
+    self.reportROIStep = ChangeTrackerWizard.ChangeTrackerReportROIStep( 'ReportROI'  )
 
     # add the wizard steps to an array for convenience
     allSteps = []
