@@ -109,7 +109,7 @@ class ChangeTrackerWidget:
         print 'Found existing ChangeTracker parameter node'
         break
     if self.parameterNode == None:
-      self.parameterNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLScriptedModuleNode')
+      self.parameterNode = slicer.vtkMRMLScriptedModuleNode()
       self.parameterNode.SetModuleName('ChangeTracker')
       slicer.mrmlScene.AddNode(self.parameterNode)
  

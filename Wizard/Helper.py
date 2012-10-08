@@ -105,15 +105,19 @@ class Helper( object ):
     vrLogic = slicer.modules.volumerendering.logic()
 
     print('ChangeTracker VR: will observe ID '+volumeID)
-    vrDisplayNode.SetAndObserveVolumeNodeID(volumeID)
     propNode = vrDisplayNode.GetVolumePropertyNode()
 
     if propNode == None:
       propNode = slicer.vtkMRMLVolumePropertyNode()
       slicer.mrmlScene.AddNode(propNode)
+    else:
+      print('Property node: '+propNode.GetID())
+
     vrDisplayNode.SetAndObserveVolumePropertyNodeID(propNode.GetID())
 
     vrDisplayNode.SetAndObserveROINodeID(roiID)
+
+    vrDisplayNode.SetAndObserveVolumeNodeID(volumeID)
 
     vrLogic.CopyDisplayToVolumeRenderingDisplayNode(vrDisplayNode)
 

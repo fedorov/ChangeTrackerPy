@@ -238,7 +238,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     if pNode.GetParameter('followupTransformID') == '':
       baselineVolumeID = pNode.GetParameter('baselineVolumeID')
       followupVolumeID = pNode.GetParameter('followupVolumeID')
-      self.__followupTransform = slicer.mrmlScene.CreateNodeByClass('vtkMRMLLinearTransformNode')
+      self.__followupTransform = slicer.vtkMRMLLinearTransformNode()
       slicer.mrmlScene.AddNode(self.__followupTransform)
 
       parameters = {}

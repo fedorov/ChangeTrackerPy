@@ -230,7 +230,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       self.__roi = slicer.mrmlScene.GetNodeByID(roiNodeID)
       self.__roiSelector.setCurrentNode(Helper.getNodeByID(self.__roi.GetID()))
     else:
-      roi = slicer.mrmlScene.CreateNodeByClass('vtkMRMLAnnotationROINode')
+      roi = slicer.vtkMRMLAnnotationROINode()
       slicer.mrmlScene.AddNode(roi)
       parameterNode.SetParameter('roiNodeID', roi.GetID())
       self.__roiSelector.setCurrentNode(roi)
@@ -243,7 +243,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     prepare roi image for the next step
     '''
     pNode = self.parameterNode()
-    cropVolumeNode = slicer.mrmlScene.CreateNodeByClass('vtkMRMLCropVolumeParametersNode')
+    cropVolumeNode = slicer.vtkMRMLCropVolumeParametersNode()
     cropVolumeNode.SetScene(slicer.mrmlScene)
     cropVolumeNode.SetName('ChangeTracker_CropVolume_node')
     cropVolumeNode.SetIsotropicResampling(True)
@@ -284,7 +284,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       vrNodeID = pNode.GetParameter('vrDisplayNodeID')
       if vrNodeID == '':
         self.__vrDisplayNode = slicer.modules.volumerendering.logic().CreateVolumeRenderingDisplayNode()
-        slicer.mrmlScene.AddNode(self.__vrDisplayNode)
+        v = slicer.mrmlScene.GetNodeByID(self.parameterNode().GetParameter('baselineVolumeID'))
+        Helper.InitVRDisplayNode(self.__vrDisplayNode, v.GetID(), self.__roi.GetID())
       else:
         self.__vrDisplayNode = slicer.mrmlScene.GetNodeByID(vrNodeID)
 
@@ -292,10 +293,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # This API has apparently been deprecated
     # self.__vrDisplayNode.SetCurrentVolumeMapper(0)
     self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
-
-    v = slicer.mrmlScene.GetNodeByID(self.parameterNode().GetParameter('baselineVolumeID'))
-
-    Helper.InitVRDisplayNode(self.__vrDisplayNode, v.GetID(), self.__roi.GetID())
+    
+    slicer.modules.volumerendering.logic().CopyDisplayToVolumeRenderingDisplayNode(self.__vrDisplayNode)
 
     self.__vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
     self.__vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
