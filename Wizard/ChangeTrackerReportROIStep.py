@@ -101,7 +101,9 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     # find the compare nodes and initialize them as we wish
     sliceNodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceNode')
+    sliceNodes.SetReferenceCount(sliceNodes.GetReferenceCount()-1)
     sliceCompositeNodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceCompositeNode')
+    sliceCompositeNodes.SetReferenceCount(sliceCompositeNodes.GetReferenceCount()-1)
 
     # setup slice nodes
     for s in range(0,sliceNodes.GetNumberOfItems()):
@@ -132,6 +134,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     # Enable crosshairs
     # Is there only one crosshair node?
     xnodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLCrosshairNode')
+    xnodes.SetReferenceCount(xnodes.GetReferenceCount()-1)
     self.__xnode = xnodes.GetItemAsObject(0)
     if self.__xnode != None:
       self.__xnode.SetCrosshairMode(5)
@@ -179,6 +182,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     metricName = self.__metricsTabs.tabText(index)
     sliceCompositeNodes = slicer.mrmlScene.GetNodesByClass('vtkMRMLSliceCompositeNode')
+    sliceCompositeNodes.SetReferenceCount(sliceCompositeNodes.GetReferenceCount()-1)
 
     for s in range(0,sliceCompositeNodes.GetNumberOfItems()):
       scNode = sliceCompositeNodes.GetItemAsObject(s)
