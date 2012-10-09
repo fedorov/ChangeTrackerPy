@@ -284,10 +284,10 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       vrNodeID = pNode.GetParameter('vrDisplayNodeID')
       if vrNodeID == '':
         self.__vrDisplayNode = slicer.modules.volumerendering.logic().CreateVolumeRenderingDisplayNode()
-        self.__vrDisplayNode.SetReferenceCount(self.__vrDisplayNode.GetReferenceCount()-1)
+        slicer.mrmlScene.AddNode(self.__vrDisplayNode)
+        self.__vrDisplayNode.UnRegister(slicer.modules.volumerendering.logic())
         v = slicer.mrmlScene.GetNodeByID(self.parameterNode().GetParameter('baselineVolumeID'))
         Helper.InitVRDisplayNode(self.__vrDisplayNode, v.GetID(), self.__roi.GetID())
-        slicer.mrmlScene.AddNode(self.__vrDisplayNode)
       else:
         self.__vrDisplayNode = slicer.mrmlScene.GetNodeByID(vrNodeID)
 
