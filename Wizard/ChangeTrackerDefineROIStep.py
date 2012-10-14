@@ -91,7 +91,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       roi.SetInteractiveMode(1)
 
       self.__roiWidget.setMRMLAnnotationROINode(roi)
-      self.__roi.VisibleOn()
+      self.__roi.SetROIAnnotationVisibility(1)
      
   def processROIEvents(self,node,event):
     # get the range of intensities inside the ROI
@@ -194,7 +194,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     self.updateWidgetFromParameterNode(pNode)
 
     if self.__roi != None:
-      self.__roi.VisibleOn()
+      self.__roi.SetROIAnnotationVisibility(1)
 
       self.InitVRDisplayNode()
 
@@ -209,7 +209,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # there?
     if self.__roi != None:
       self.__roi.RemoveObserver(self.__roiObserverTag)
-      self.__roi.VisibleOff()
+      self.__roi.SetROIAnnotationVisibility(0)
     
     pNode = self.parameterNode()
     if self.__vrDisplayNode != None:

@@ -212,7 +212,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     Helper.InitVRDisplayNode(self.__vrDisplayNode, labelVolume.GetID(), roiNodeID)
 
     newROI = self.__vrDisplayNode.GetROINode()
-    newROI.VisibleOff()
+    newROI.SetROIAnnotationVisibility(0)
 
     vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
     vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
