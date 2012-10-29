@@ -5,10 +5,6 @@ class ChangeTrackerStep( ctk.ctkWorkflowWidgetStep ) :
   def __init__( self, stepid ):
     self.initialize( stepid )
 
-#    self.__mrmlManager = None
-#    self.__logic = None
-#    self.__workflow = None
-
   def setWorkflow( self, workflow ):
     '''
     '''
@@ -19,20 +15,6 @@ class ChangeTrackerStep( ctk.ctkWorkflowWidgetStep ) :
     Keep the pointer to the parameter node for each step
     '''
     self.__parameterNode = parameterNode
-
-  '''
-  def setMRMLManager( self, mrmlManager ):
-    self.__mrmlManager = mrmlManager
-
-  def setLogic( self, logic ):
-    self.__logic = logic
-
-  def mrmlManager( self ):
-    return self.__mrmlManager
-
-  def logic( self ):
-    return self.__logic
-  '''
 
   def workflow( self ):
     return self.__workflow
@@ -50,9 +32,8 @@ class ChangeTrackerStep( ctk.ctkWorkflowWidgetStep ) :
     self.__layout = qt.QFormLayout( self )
     self.__layout.setVerticalSpacing( 5 )
 
-    # add empty row
+    # Add empty rows
     self.__layout.addRow( "", qt.QWidget() )
-    # add empty row
     self.__layout.addRow( "", qt.QWidget() )
 
     return self.__layout
@@ -84,6 +65,3 @@ class ChangeTrackerStep( ctk.ctkWorkflowWidgetStep ) :
     messageBox = qt.QMessageBox.warning( self, messageTitle, messageText )
     super( ChangeTrackerStep, self ).validate( False, desiredBranchId )
 
-  '''
-  def updateWidgetFromParameters(self, parameterNode):
-  '''
