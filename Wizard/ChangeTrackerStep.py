@@ -5,19 +5,11 @@ class ChangeTrackerStep( ctk.ctkWorkflowWidgetStep ) :
   def __init__( self, stepid ):
     self.initialize( stepid )
 
-  def setWorkflow( self, workflow ):
-    '''
-    '''
-    self.__workflow = workflow
-
   def setParameterNode(self, parameterNode):
     '''
     Keep the pointer to the parameter node for each step
     '''
     self.__parameterNode = parameterNode
-
-  def workflow( self ):
-    return self.__workflow
 
   def parameterNode(self):
     return self.__parameterNode

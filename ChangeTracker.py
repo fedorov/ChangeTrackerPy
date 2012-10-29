@@ -93,7 +93,6 @@ class ChangeTrackerWidget:
       slicer.mrmlScene.AddNode(self.parameterNode)
  
     for s in allSteps:
-        s.setWorkflow( self.workflow )
         s.setParameterNode (self.parameterNode)
 
     # restore workflow step
