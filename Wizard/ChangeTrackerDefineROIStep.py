@@ -232,7 +232,6 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     else:
       roi = slicer.vtkMRMLAnnotationROINode()
       roi.Initialize(slicer.mrmlScene)
-      slicer.mrmlScene.AddNode(roi)
       parameterNode.SetParameter('roiNodeID', roi.GetID())
       self.__roiSelector.setCurrentNode(roi)
     
