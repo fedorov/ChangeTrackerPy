@@ -1,4 +1,4 @@
-ADD_SUBDIRECTORY(IntensityDifference)
-#ADD_SUBDIRECTORY(SurfaceTracking)
-#ADD_SUBDIRECTORY(DemonsJacobian)
-#ADD_SUBDIRECTORY(DemonsSegmentation)
+add_subdirectory(IntensityDifference)
+#add_subdirectory(SurfaceTracking)
+#add_subdirectory(DemonsJacobian)
+#add_subdirectory(DemonsSegmentation)
