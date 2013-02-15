@@ -3,14 +3,14 @@ if(BUILD_TESTING)
   set(Launcher_Command ${Slicer_LAUNCH_COMMAND})
 endif()
 
-ADD_SUBDIRECTORY(Wizard)
-ADD_SUBDIRECTORY(Metrics)
+add_subdirectory(Wizard)
+add_subdirectory(Metrics)
 
-SET(CT_PYTHON_SCRIPTS
-    ChangeTracker.py
+set(CT_PYTHON_SCRIPTS
+  ChangeTracker.py
   )
   
-SET(CT_PYTHON_RESOURCES
+set(CT_PYTHON_RESOURCES
   )
   
 ctkMacroCompilePythonScript(

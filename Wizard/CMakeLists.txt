@@ -1,4 +1,4 @@
-SET(CTWizard_PYTHON_SCRIPTS
+set(CTWizard_PYTHON_SCRIPTS
   __init__.py
   Helper.py
   ChangeTrackerStep.py
@@ -8,9 +8,9 @@ SET(CTWizard_PYTHON_SCRIPTS
   ChangeTrackerRegistrationStep.py
   ChangeTrackerAnalyzeROIStep.py
   ChangeTrackerReportROIStep.py
- )
+  )
 
-SET(CTWizard_PYTHON_RESOURCES
+set(CTWizard_PYTHON_RESOURCES
   )
   
 ctkMacroCompilePythonScript(
@@ -22,7 +22,5 @@ ctkMacroCompilePythonScript(
   )
 
 #-----------------------------------------------------------------------------
-# Testing
-#
 if(BUILD_TESTING)
 endif(BUILD_TESTING)
