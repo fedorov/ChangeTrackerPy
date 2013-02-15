@@ -1,8 +1,5 @@
 
-if(BUILD_TESTING)
-  set(Launcher_Command ${Slicer_LAUNCH_COMMAND})
-endif()
-
+#-----------------------------------------------------------------------------
 add_subdirectory(Wizard)
 add_subdirectory(Metrics)
 
