@@ -1,1 +1,1 @@
-add_test(NAME IntensityDifferenceTest1 COMMAND ${Launcher_Command} $<TARGET_FILE:IntensityDifferenceMetric> --help)
+add_test(NAME IntensityDifferenceTest1 COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:IntensityDifferenceMetric> --help)
