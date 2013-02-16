@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 2.8.9)
 
 #-----------------------------------------------------------------------------
-set(MODULE_NAME ChangeTracker)
-
-#-----------------------------------------------------------------------------
 if(NOT Slicer_SOURCE_DIR)
-  
   set(EXTENSION_NAME ChangeTracker)
   set(EXTENSION_HOMEPAGE "http://wiki.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/ChangeTracker")
   set(EXTENSION_CATEGORY "Wizards")
@@ -14,15 +10,19 @@ if(NOT Slicer_SOURCE_DIR)
   set(EXTENSION_ICONURL "http://www.slicer.org/slicerWiki/images/b/b9/ChangeTracker_logo.png")
   set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/8/8e/Slicer4_ChangeTracker_Ad.png")
   set(EXTENSION_STATUS "Work in progress")
+endif()
 
+#-----------------------------------------------------------------------------
+if(NOT Slicer_SOURCE_DIR)
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-
-  set(MODULE_NAME ${EXTENSION_NAME})
 endif()
 
 #-----------------------------------------------------------------------------
 add_subdirectory(Metrics)
+
+#-----------------------------------------------------------------------------
+set(MODULE_NAME ChangeTracker)
 
 #-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS
