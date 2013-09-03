@@ -52,9 +52,6 @@ class ChangeTrackerWidget:
     workflowWidget = ctk.ctkWorkflowStackedWidget()
     workflowWidget.setWorkflow( self.workflow )
 
-    workflowWidget.buttonBoxWidget().nextButtonDefaultText = ""
-    workflowWidget.buttonBoxWidget().backButtonDefaultText = ""
-    
     # create all wizard steps
     self.selectScansStep = ChangeTrackerWizard.ChangeTrackerSelectScansStep( 'SelectScans'  )
     self.defineROIStep = ChangeTrackerWizard.ChangeTrackerDefineROIStep( 'DefineROI'  )
@@ -91,7 +88,7 @@ class ChangeTrackerWidget:
       self.parameterNode = slicer.vtkMRMLScriptedModuleNode()
       self.parameterNode.SetModuleName('ChangeTracker')
       slicer.mrmlScene.AddNode(self.parameterNode)
- 
+
     for s in allSteps:
         s.setParameterNode (self.parameterNode)
 
@@ -111,7 +108,7 @@ class ChangeTrackerWidget:
         self.workflow.setInitialStep(self.reportROIStep)
     else:
       print 'currentStep in parameter node is empty!'
-        
+
     # start the workflow and show the widget
     self.workflow.start()
     workflowWidget.visible = True
@@ -122,7 +119,7 @@ class ChangeTrackerWidget:
     #slicer.modules.emsegmentAdvancedDynamicFrame = definePreprocessingStep.dynamicFrame()
 
     # compress the layout
-      #self.layout.addStretch(1)        
- 
+      #self.layout.addStretch(1)
+
   def enter(self):
     print "ChangeTracker: enter() called"
