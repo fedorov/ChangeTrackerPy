@@ -304,6 +304,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     cliNode = None
     cliNode = slicer.cli.run(slicer.modules.resamplescalarvectordwivolume, cliNode, parameters, 1)
 
+    # reset the transform on the cropped ROI
+    followupVolumeROI.SetAndObserveTransformNodeID(None)
+
     status = cliNode.GetStatusString()
     if status == 'Completed':
       Helper.Info('ResampleScalarVectorDWIVolume completed OK')
