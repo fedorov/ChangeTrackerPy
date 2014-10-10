@@ -109,7 +109,10 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
     # update the label volume accordingly
     thresh = vtk.vtkImageThreshold()
-    thresh.SetInput(self.__roiVolume.GetImageData())
+    if vtk.VTK_MAJOR_VERSION <= 5:
+      thresh.SetInput(self.__roiVolume.GetImageData())
+    else:
+      thresh.SetInputData(self.__roiVolume.GetImageData())
     thresh.ThresholdBetween(range0, range1)
     thresh.SetInValue(10)
     thresh.SetOutValue(0)

@@ -138,7 +138,10 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     clipper = vtk.vtkImageClip()
     clipper.ClipDataOn()
     clipper.SetOutputWholeExtent(int(lowerIJK[0]),int(upperIJK[0]),int(lowerIJK[1]),int(upperIJK[1]),int(lowerIJK[2]),int(upperIJK[2]))
-    clipper.SetInput(image)
+    if vtk.VTK_MAJOR_VERSION <= 5:
+      clipper.SetInput(image)
+    else:
+      clipper.SetInputData(image)
     clipper.Update()
 
     roiImageRegion = clipper.GetOutput()
