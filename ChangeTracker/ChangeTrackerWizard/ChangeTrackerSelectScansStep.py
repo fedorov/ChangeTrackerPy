@@ -50,10 +50,20 @@ class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
     if len(bl):
       bl[0].hide()
 
-  def loadData(self):
-    vl = slicer.modules.volumes.logic()
-    vol1 = vl.AddArchetypeVolume('http://www.slicer.org/slicerWiki/images/5/59/RegLib_C01_1.nrrd', 'Meningioma1', 0)
-    vol2 = vl.AddArchetypeVolume('http://www.slicer.org/slicerWiki/images/e/e3/RegLib_C01_2.nrrd', 'Meningioma2', 0)
+  def loadData(self):    
+
+    vols = (('Timepoint1','http://www.slicer.org/slicerWiki/images/5/59/RegLib_C01_1.nrrd'),
+            ('Timepoint2','http://www.slicer.org/slicerWiki/images/e/e3/RegLib_C01_2.nrrd'))
+    for item, url in vols:
+      import os, urllib
+      filePath = os.path.join(slicer.app.temporaryPath, item+'.nrrd')
+      if not urllib.urlretrieve(url, filePath):
+        print("ERROR: failed to download test dataset "+item)
+      slicer.util.loadVolume(filePath)
+
+    vol1 = slicer.util.getNode(pattern='Timepoint1')
+    vol2 = slicer.util.getNode(pattern='Timepoint2')
+    
     if vol1 != None and vol2 != None:
       self.__baselineVolumeSelector.setCurrentNode(vol1)
       self.__followupVolumeSelector.setCurrentNode(vol1)
