@@ -1,8 +1,9 @@
+from __future__ import print_function
 from __main__ import vtk, qt, ctk, slicer
 
 import ChangeTrackerWizard
 
-class ChangeTracker:
+class ChangeTracker(object):
   def __init__( self, parent ):
     parent.title = """ChangeTracker"""
     parent.categories = ["""Wizards"""]
@@ -14,7 +15,7 @@ class ChangeTracker:
     """
     self.parent = parent
 
-class ChangeTrackerWidget:
+class ChangeTrackerWidget(object):
   def __init__( self, parent=None ):
     if not parent:
       self.parent = slicer.qMRMLWidget()
@@ -77,12 +78,12 @@ class ChangeTrackerWidget:
     nNodes = slicer.mrmlScene.GetNumberOfNodesByClass('vtkMRMLScriptedModuleNode')
 
     self.parameterNode = None
-    for n in xrange(nNodes):
+    for n in range(nNodes):
       compNode = slicer.mrmlScene.GetNthNodeByClass(n, 'vtkMRMLScriptedModuleNode')
       nodeid = None
       if compNode.GetModuleName() == 'ChangeTracker':
         self.parameterNode = compNode
-        print 'Found existing ChangeTracker parameter node'
+        print('Found existing ChangeTracker parameter node')
         break
     if self.parameterNode == None:
       self.parameterNode = slicer.vtkMRMLScriptedModuleNode()
@@ -95,7 +96,7 @@ class ChangeTrackerWidget:
     # restore workflow step
     currentStep = self.parameterNode.GetParameter('currentStep')
     if currentStep != '':
-      print 'Restoring workflow step to ', currentStep
+      print('Restoring workflow step to ', currentStep)
       if currentStep == 'SelectScans':
         self.workflow.setInitialStep(self.selectScansStep)
       if currentStep == 'DefineROI':
@@ -107,7 +108,7 @@ class ChangeTrackerWidget:
       if currentStep == 'ReportROI':
         self.workflow.setInitialStep(self.reportROIStep)
     else:
-      print 'currentStep in parameter node is empty!'
+      print('currentStep in parameter node is empty!')
 
     # start the workflow and show the widget
     self.workflow.start()
@@ -122,4 +123,4 @@ class ChangeTrackerWidget:
       #self.layout.addStretch(1)
 
   def enter(self):
-    print "ChangeTracker: enter() called"
+    print("ChangeTracker: enter() called")
