@@ -1,3 +1,7 @@
+from __future__ import print_function
+from six.moves.urllib.parse import urlparse
+from six.moves.urllib.request import urlretrieve
+from six.moves.urllib.error import URLError
 import os
 import unittest
 from __main__ import vtk, qt, ctk, slicer
@@ -6,7 +10,7 @@ from __main__ import vtk, qt, ctk, slicer
 # derived from RSNA2012Quant that was at some point included in Slicer tree
 #
 
-class ChangeTrackerSelfTest:
+class ChangeTrackerSelfTest(object):
   def __init__(self, parent):
     parent.title = "ChangeTrackerSelfTest" # TODO make this more human readable by adding spaces
     parent.categories = ["Testing.TestCases"]
@@ -37,7 +41,7 @@ class ChangeTrackerSelfTest:
 # qChangeTrackerTestWidget
 #
 
-class ChangeTrackerSelfTestWidget:
+class ChangeTrackerSelfTestWidget(object):
   def __init__(self, parent = None):
     if not parent:
       self.parent = slicer.qMRMLWidget()
@@ -143,9 +147,9 @@ class ChangeTrackerSelfTestWidget:
 # ChangeTrackerTestLogic
 #
 
-class ChangeTrackerSelfTestLogic:
-  """This class should implement all the actual 
-  computation done by your module.  The interface 
+class ChangeTrackerSelfTestLogic(object):
+  """This class should implement all the actual
+  computation done by your module.  The interface
   should be such that other python code can import
   this class and make use of the functionality without
   requiring an instance of the Widget
@@ -154,7 +158,7 @@ class ChangeTrackerSelfTestLogic:
     pass
 
   def hasImageData(self,volumeNode):
-    """This is a dummy logic method that 
+    """This is a dummy logic method that
     returns true if the passed in volume
     node has valid image data
     """
@@ -226,7 +230,7 @@ class ChangeTrackerSelfTestTest(unittest.TestCase):
       interator.SetControlKey(1)
     interator.SetEventPosition(*start)
     down()
-    for step in xrange(steps):
+    for step in range(steps):
       frac = float(step)/steps
       x = int(start[0] + frac*(end[0]-start[0]))
       y = int(start[1] + frac*(end[1]-start[1]))
@@ -251,7 +255,6 @@ class ChangeTrackerSelfTestTest(unittest.TestCase):
     #
     # first, get some data
     #
-    import urllib
     downloads = (
         ('http://slicer.kitware.com/midas3/download?items=8986', 'RSNA2011_ChangeTracker_data.zip', slicer.util.loadScene),
         )
@@ -260,7 +263,7 @@ class ChangeTrackerSelfTestTest(unittest.TestCase):
       filePath = slicer.app.temporaryPath + '/' + name
       if not os.path.exists(filePath) or os.stat(filePath).st_size == 0:
         print('Requesting download %s from %s...\n' % (name, url))
-        urllib.urlretrieve(url, filePath)
+        urlretrieve(url, filePath)
       if loader:
         print('Loading %s...\n' % (name,))
         loader(filePath)
@@ -299,14 +302,14 @@ class ChangeTrackerSelfTestTest(unittest.TestCase):
       self.clickAndDrag(redWidget,button='Middle')
 
       self.delayDisplay('Inspect - scroll')
-      for offset in xrange(-20,20,2):
+      for offset in range(-20,20,2):
         redController.setSliceOffsetValue(offset)
 
       self.delayDisplay('Set ROI')
       roi = changeTracker.defineROIStep._ChangeTrackerDefineROIStep__roi
       roi.SetXYZ(-2.81037, 28.7629, 28.4536)
       roi.SetRadiusXYZ(22.6467, 22.6804, 22.9897)
-    
+
       self.delayDisplay('Go Forward')
       changeTracker.workflow.goForward()
 
@@ -315,11 +318,11 @@ class ChangeTrackerSelfTestTest(unittest.TestCase):
 
       self.delayDisplay('Go Forward')
       changeTracker.workflow.goForward()
-        
+
       self.delayDisplay('Pick Metric')
       checkList = changeTracker.analyzeROIStep._ChangeTrackerAnalyzeROIStep__metricCheckboxList
-      index = checkList.values().index('IntensityDifferenceMetric')
-      checkList.keys()[index].checked = True
+      index = list(checkList.values()).index('IntensityDifferenceMetric')
+      list(checkList.keys())[index].checked = True
 
       self.delayDisplay('Go Forward')
       changeTracker.workflow.goForward()
@@ -332,7 +335,7 @@ class ChangeTrackerSelfTestTest(unittest.TestCase):
       compareWidget = layoutManager.sliceWidget('Compare1')
       style = compareWidget.interactorStyle()
       interator = style.GetInteractor()
-      for step in xrange(100):
+      for step in range(100):
         interator.SetEventPosition(10,step)
         style.OnMouseMove()
 
@@ -344,14 +347,14 @@ class ChangeTrackerSelfTestTest(unittest.TestCase):
 
       self.delayDisplay('Inspect - scroll')
       compareController = redWidget.sliceController()
-      for offset in xrange(10,30,2):
+      for offset in range(10,30,2):
         compareController.setSliceOffsetValue(offset)
 
       self.delayDisplay('Close Scene')
       slicer.mrmlScene.Clear(0)
 
       self.delayDisplay('Test passed!')
-    except Exception, e:
+    except Exception as e:
       import traceback
       traceback.print_exc()
       self.delayDisplay('Test caused exception!\n' + str(e))
