@@ -1,7 +1,7 @@
 from __main__ import qt, ctk
 
-from ChangeTrackerStep import *
-from Helper import *
+from .ChangeTrackerStep import *
+from .Helper import *
 
 import string
 
@@ -33,7 +33,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     '''
 #    self.buttonBoxHints = self.ButtonBoxHidden
 
-    print 'Creating user interface for last step!'
+    print('Creating user interface for last step!')
     self.__layout = self.__parent.createUserInterface()
 
     self.__metricsTabs = qt.QTabWidget()
@@ -61,13 +61,13 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     self.__metricTabsList = {}
     self.__metricsVolumes = {}
 
-    print 'Metrics list: ', metrics
-    metricsReports = string.split(pNode.GetParameter('resultReports'),',')
-    metricsVolumesIDs = string.split(pNode.GetParameter('resultVolumes'),',')
+    print('Metrics list: ', metrics)
+    metricsReports = pNode.GetParameter('resultReports').split(',')
+    metricsVolumesIDs = pNode.GetParameter('resultVolumes').split(',')
 
     i = 0
 
-    metricsList = string.split(metrics,',')
+    metricsList = metrics.split(',')
 
     if len(metricsVolumesIDs) != len(metricsList):
       Helper.Error('Missing metric processing results!')
@@ -139,7 +139,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     if self.__xnode != None:
       self.__xnode.SetCrosshairMode(5)
     else:
-      print 'Failed to find crosshair node!'
+      print('Failed to find crosshair node!')
 
 
     '''
@@ -207,9 +207,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     '''
     labelVolume = slicer.mrmlScene.GetNodeByID(labelID)
 
-    pNode = self.parameterNode()
-    roiNodeID = pNode.GetParameter('roiNodeID')
-    Helper.InitVRDisplayNode(self.__vrDisplayNode, labelVolume.GetID(), roiNodeID)
+    self.__vrDisplayNode = Helper.InitVRDisplayNode(labelVolume.GetID())
 
     newROI = self.__vrDisplayNode.GetROINode()
     newROI.SetDisplayVisibility(0)
@@ -219,7 +217,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     roiNodeID = self.parameterNode().GetParameter('roiNodeID')
     if roiNodeID != '':
       self.__vrDisplayNode.SetAndObserveROINodeID(roiNodeID)
-      self.__vrDisplayNode.SetCroppingEnabled(0);
+      self.__vrDisplayNode.SetCroppingEnabled(0)
 
     # label map rendering looks better with shading
     self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().SetShade(1)

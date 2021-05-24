@@ -1,7 +1,7 @@
 from __main__ import qt, ctk
 
-from ChangeTrackerStep import *
-from Helper import *
+from .ChangeTrackerStep import *
+from .Helper import *
 
 import glob
 import re
@@ -41,7 +41,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
       if m.endswith('Metric'):
         changeTrackerMetrics.append(m)
 
-    print 'Metrics discovered: ', changeTrackerMetrics
+    print('Metrics discovered: ', changeTrackerMetrics)
 
     # if len(changeTrackerMetrics) == 0:
     #   report error -- should this be done in __init__ ? 
@@ -152,7 +152,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     self.updateParametersFromWidget()
 
 
-    print 'onExit() in Analyze step: goingTo = ',goingTo.id(),', selfId = ',self.id()
+    print('onExit() in Analyze step: goingTo = ',goingTo.id(),', selfId = ',self.id())
     if goingTo.id() == 'ReportROI':
       self.doStepProcessing()
 
@@ -163,7 +163,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
   def updateWidgetFromParameters(self):
     pNode = self.parameterNode()
     # update widget elements
-    metricsList = string.split(pNode.GetParameter('metrics'),',')
+    metricsList = pNode.GetParameter('metrics').split(',')
     for mc in self.__metricCheckboxList:
       m = self.__metricCheckboxList[mc]
       if m in metricsList:
@@ -194,13 +194,13 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
   '''
   def updateProgress(self):
-    print 'updateProgress() !!!'
+    print('updateProgress() !!!')
     slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
     self.progress.repaint()
   '''
 
   def doStepProcessing(self):
-    print 'Step processing'
+    print('Step processing')
     
     '''
     timer = qt.QTimer()
@@ -266,7 +266,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
         self.progress.repaint()
         status = cliNode.GetStatusString()
 
-      print 'Registration completed: status = ', status
+      print('Registration completed: status = ', status)
       '''
 
       if status == 'Completed':
@@ -277,9 +277,9 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
 
       pNode.SetParameter('followupTransformID', self.__followupTransform.GetID())
 
-      print 'AnalyzeROIStep: registration completed!'
+      print('AnalyzeROIStep: registration completed!')
     else:
-      print 'AnalyzeROIStep: registration not required!'
+      print('AnalyzeROIStep: registration not required!')
 
     self.progress.setLabelText('Estimating changes')
     slicer.app.processEvents(qt.QEventLoop.ExcludeUserInputEvents)
@@ -331,7 +331,7 @@ class ChangeTrackerAnalyzeROIStep( ChangeTrackerStep ) :
     resultVolumesList = ''
 
     moduleManager = slicer.app.moduleManager()
-    for m in string.split(metricsList,','):
+    for m in metricsList.split(','):
       # TODO: processing should be separated from the workflow! need to move
       # this into a different place
       pluginName = m

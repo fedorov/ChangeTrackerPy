@@ -1,7 +1,7 @@
 from __main__ import qt, ctk, slicer
 
-from ChangeTrackerStep import *
-from Helper import *
+from .ChangeTrackerStep import *
+from .Helper import *
 import PythonQt
 
 class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
@@ -138,10 +138,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     clipper = vtk.vtkImageClip()
     clipper.ClipDataOn()
     clipper.SetOutputWholeExtent(int(lowerIJK[0]),int(upperIJK[0]),int(lowerIJK[1]),int(upperIJK[1]),int(lowerIJK[2]),int(upperIJK[2]))
-    if vtk.VTK_MAJOR_VERSION <= 5:
-      clipper.SetInput(image)
-    else:
-      clipper.SetInputData(image)
+    clipper.SetInputData(image)
     clipper.Update()
 
     roiImageRegion = clipper.GetOutput()
@@ -287,19 +284,11 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       vrNodeID = pNode.GetParameter('vrDisplayNodeID')
       if vrNodeID == '':
         self.__vrDisplayNode = slicer.modules.volumerendering.logic().CreateVolumeRenderingDisplayNode()
-        slicer.mrmlScene.AddNode(self.__vrDisplayNode)
-        self.__vrDisplayNode.UnRegister(slicer.modules.volumerendering.logic())
         v = slicer.mrmlScene.GetNodeByID(self.parameterNode().GetParameter('baselineVolumeID'))
-        Helper.InitVRDisplayNode(self.__vrDisplayNode, v.GetID(), self.__roi.GetID())
-        v.AddAndObserveDisplayNodeID(self.__vrDisplayNode.GetID())
+        self.__vrDisplayNode = Helper.InitVRDisplayNode(v.GetID(), self.__roi.GetID())
       else:
         self.__vrDisplayNode = slicer.mrmlScene.GetNodeByID(vrNodeID)
 
-    viewNode = slicer.util.getNode('vtkMRMLViewNode1')
-    # This API has apparently been deprecated
-    # self.__vrDisplayNode.SetCurrentVolumeMapper(0)
-    self.__vrDisplayNode.AddViewNodeID(viewNode.GetID())
-    
     slicer.modules.volumerendering.logic().CopyDisplayToVolumeRenderingDisplayNode(self.__vrDisplayNode)
 
     self.__vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()

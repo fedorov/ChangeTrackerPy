@@ -1,7 +1,7 @@
 from __main__ import qt, ctk
 
-from ChangeTrackerStep import *
-from Helper import *
+from .ChangeTrackerStep import *
+from .Helper import *
 
 class ChangeTrackerSelectScansStep( ChangeTrackerStep ) :
 

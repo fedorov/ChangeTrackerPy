@@ -16,7 +16,7 @@ class Helper( object ):
     
     '''
 
-    #print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: " + str( message )
+    #print("[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: " + str( message ))
     #sys.stdout.flush()
 
   @staticmethod
@@ -25,7 +25,7 @@ class Helper( object ):
     
     '''
 
-    #print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: WARNING: " + str( message )
+    #print("[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: WARNING: " + str( message ))
     #sys.stdout.flush()
 
   @staticmethod
@@ -34,7 +34,7 @@ class Helper( object ):
     
     '''
 
-    print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: ERROR: " + str( message )
+    print("[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "]: ERROR: " + str( message ))
     sys.stdout.flush()
 
   @staticmethod
@@ -54,7 +54,7 @@ class Helper( object ):
     showDebugOutput = 0
     from time import strftime
     if showDebugOutput:
-        print "[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "] DEBUG: " + str( message )
+        print("[ChangeTrackerPy " + time.strftime( "%m/%d/%Y %H:%M:%S" ) + "] DEBUG: " + str( message ))
         sys.stdout.flush()
 
   @staticmethod
@@ -101,26 +101,16 @@ class Helper( object ):
     appLogic.PropagateVolumeSelection()
 
   @staticmethod
-  def InitVRDisplayNode(vrDisplayNode, volumeID, roiID):
+  def InitVRDisplayNode(volumeID, roiID=None):
     vrLogic = slicer.modules.volumerendering.logic()
-
     print('ChangeTracker VR: will observe ID '+volumeID)
+    vrDisplayNode = vrLogic.CreateDefaultVolumeRenderingNodes(slicer.mrmlScene.GetNodeByID(volumeID))
     propNode = vrDisplayNode.GetVolumePropertyNode()
-
-    if propNode == None:
-      propNode = slicer.vtkMRMLVolumePropertyNode()
-      slicer.mrmlScene.AddNode(propNode)
-    else:
-      print('Property node: '+propNode.GetID())
-
-    vrDisplayNode.SetAndObserveVolumePropertyNodeID(propNode.GetID())
-
-    vrDisplayNode.SetAndObserveROINodeID(roiID)
-
-    vrDisplayNode.SetAndObserveVolumeNodeID(volumeID)
-
+    print('Property node: '+propNode.GetID())
+    if roiID:
+      vrDisplayNode.SetAndObserveROINodeID(roiID)
     vrLogic.CopyDisplayToVolumeRenderingDisplayNode(vrDisplayNode)
-
+    return vrDisplayNode
 
   @staticmethod
   def findChildren(widget=None,name="",text=""):

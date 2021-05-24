@@ -1,7 +1,7 @@
 from __main__ import qt, ctk
 
-from ChangeTrackerStep import *
-from Helper import *
+from .ChangeTrackerStep import *
+from .Helper import *
 
 import string
 
@@ -107,10 +107,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
     # update the label volume accordingly
     thresh = vtk.vtkImageThreshold()
-    if vtk.VTK_MAJOR_VERSION <= 5:
-      thresh.SetInput(self.__roiVolume.GetImageData())
-    else:
-      thresh.SetInputData(self.__roiVolume.GetImageData())
+    thresh.SetInputData(self.__roiVolume.GetImageData())
     thresh.ThresholdBetween(range0, range1)
     thresh.SetInValue(10)
     thresh.SetOutValue(0)
@@ -165,12 +162,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
     if self.__useThresholds:
 
-      roiNodeID = pNode.GetParameter('roiNodeID')
-      if roiNodeID == None:
-        Helper.Error('Failed to find ROI node -- it should have been defined in the previous step!')
-        return
-
-      Helper.InitVRDisplayNode(self.__vrDisplayNode, roiVolume.GetID(), roiNodeID)
+      self.__vrDisplayNode = Helper.InitVRDisplayNode(roiVolume.GetID())
 
       self.__vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
       vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
@@ -222,7 +214,7 @@ class ChangeTrackerSegmentROIStep( ChangeTrackerStep ) :
 
       thresholdRange = pNode.GetParameter('thresholdRange')
       if thresholdRange != '':
-        rangeArray = string.split(thresholdRange, ',')
+        rangeArray = thresholdRange.split(',')
         self.__threshRange.minimumValue = float(rangeArray[0])
         self.__threshRange.maximumValue = float(rangeArray[1])
       else:
