@@ -62,7 +62,7 @@ class ChangeTrackerSelfTestWidget(object):
     #  your module to users)
     self.reloadButton = qt.QPushButton("Reload")
     self.reloadButton.toolTip = "Reload this module."
-    self.reloadButton.name = "ChangeTrackerTest Reload"
+    self.reloadButton.name = "ChangeTrackerSelfTest Reload"
     self.layout.addWidget(self.reloadButton)
     self.reloadButton.connect('clicked()', self.onReload)
 
@@ -256,7 +256,7 @@ class ChangeTrackerSelfTestTest(unittest.TestCase):
     # first, get some data
     #
     downloads = (
-        ('http://slicer.kitware.com/midas3/download?items=8986', 'RSNA2011_ChangeTracker_data.zip', slicer.util.loadScene),
+        ('https://github.com/Slicer/SlicerTestingData/releases/download/SHA256/256bf00a83884fab173edc9f83c028f654bd5eb44aeed28d2203ec76fab941ce', 'RSNA2011_ChangeTracker_data.zip', slicer.util.loadScene),
         )
 
     for url,name,loader in downloads:
