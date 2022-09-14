@@ -36,7 +36,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     roiLabel = qt.QLabel( 'Select ROI:' )
     self.__roiSelector = slicer.qMRMLNodeComboBox()
-    self.__roiSelector.nodeTypes = ['vtkMRMLAnnotationROINode']
+    self.__roiSelector.nodeTypes = ['vtkMRMLMarkupsROINode']
     self.__roiSelector.toolTip = "ROI defining the structure of interest"
     self.__roiSelector.setMRMLScene(slicer.mrmlScene)
     self.__roiSelector.addEnabled = 1
@@ -52,7 +52,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     voiGroupBoxLayout = qt.QFormLayout( voiGroupBox )
 
-    self.__roiWidget = PythonQt.qSlicerAnnotationsModuleWidgets.qMRMLAnnotationROIWidget()
+    self.__roiWidget = slicer.qMRMLMarkupsROIWidget()
     voiGroupBoxLayout.addRow( self.__roiWidget )
 
     # initialize VR stuff
@@ -67,7 +67,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
     if roi != None:
       self.__roi = roi
-    
+
       pNode = self.parameterNode()
       # create VR node first time a valid ROI is selected
       self.InitVRDisplayNode()
@@ -88,11 +88,11 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
 
       self.__roiObserverTag = self.__roi.AddObserver('ModifiedEvent', self.processROIEvents)
 
-      roi.SetInteractiveMode(1)
+      roi.SetLocked(False)
 
-      self.__roiWidget.setMRMLAnnotationROINode(roi)
-      self.__roi.SetDisplayVisibility(1)
-     
+      self.__roiWidget.setMRMLMarkupsNode(roi)
+      self.__roi.GetDisplayNode().SetVisibility(True)
+
   def processROIEvents(self,node,event):
     # get the range of intensities inside the ROI
 
@@ -165,7 +165,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     roi = self.__roiSelector.currentNode()
     if roi == None:
       self.__parent.validationFailed(desiredBranchId, 'Error', 'Please define ROI!')
-      
+
     self.__parent.validationSucceeded(desiredBranchId)
 
   def onEntry(self,comingFrom,transitionType):
@@ -185,7 +185,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       self.__roiTransformNode = Helper.getNodeByID(roiTfmNodeID)
     else:
       Helper.Error('Internal error! Error code CT-S2-NRT, please report!')
-    
+
     baselineVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
     self.__baselineVolume = slicer.mrmlScene.GetNodeByID(pNode.GetParameter('baselineVolumeID'))
 
@@ -194,12 +194,12 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     self.updateWidgetFromParameterNode(pNode)
 
     if self.__roi != None:
-      self.__roi.SetDisplayVisibility(1)
+      self.__roi.GetDisplayNode().SetVisibility(True)
 
       self.InitVRDisplayNode()
 
     pNode.SetParameter('currentStep', self.stepid)
-    
+
     qt.QTimer.singleShot(0, self.killButton)
 
   def onExit(self, goingTo, transitionType):
@@ -209,8 +209,8 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     # there?
     if self.__roi != None:
       self.__roi.RemoveObserver(self.__roiObserverTag)
-      self.__roi.SetDisplayVisibility(0)
-    
+      self.__roi.GetDisplayNode().SetVisibility(False)
+
     pNode = self.parameterNode()
     if self.__vrDisplayNode != None:
       self.__vrDisplayNode.VisibilityOff()
@@ -230,13 +230,12 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
       self.__roi = slicer.mrmlScene.GetNodeByID(roiNodeID)
       self.__roiSelector.setCurrentNode(Helper.getNodeByID(self.__roi.GetID()))
     else:
-      roi = slicer.vtkMRMLAnnotationROINode()
-      roi.Initialize(slicer.mrmlScene)
+      roi = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsROINode")
       parameterNode.SetParameter('roiNodeID', roi.GetID())
       self.__roiSelector.setCurrentNode(roi)
-    
+
     self.onROIChanged()
-      
+
 
   def doStepProcessing(self):
     '''
@@ -263,7 +262,7 @@ class ChangeTrackerDefineROIStep( ChangeTrackerStep ) :
     outputVolume.SetName("baselineROI")
     pNode.SetParameter('croppedBaselineVolumeID',cropVolumeNode.GetOutputVolumeNodeID())
 
-    roiSegmentationID = pNode.GetParameter('croppedBaselineVolumeSegmentationID') 
+    roiSegmentationID = pNode.GetParameter('croppedBaselineVolumeSegmentationID')
     if roiSegmentationID == '':
       roiRange = outputVolume.GetImageData().GetScalarRange()
 

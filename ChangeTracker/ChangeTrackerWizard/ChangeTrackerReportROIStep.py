@@ -38,7 +38,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
 
     self.__metricsTabs = qt.QTabWidget()
     self.__layout.addRow(self.__metricsTabs)
-    
+
   def validate( self, desiredBranchId ):
     '''
     '''
@@ -162,7 +162,7 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     pNode.SetParameter('currentStep', self.stepid)
 
     Helper.Info('Report step: leaving onEntry()')
-    
+
     qt.QTimer.singleShot(0, self.killButton)
 
   def onExit(self, goingTo, transitionType):
@@ -196,9 +196,9 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
         scNode.SetLinkedControl(0)
         scNode.SetLabelVolumeID(self.__metricsVolumes[metricName])
         scNode.SetLinkedControl(1)
-    
+
     slicer.modules.volumes.logic().GetApplicationLogic().FitSliceToAll()
-    
+
     self.showChangeMapVolumeRendering(self.__metricsVolumes[metricName])
 
   def showChangeMapVolumeRendering(self, labelID):
@@ -208,9 +208,6 @@ class ChangeTrackerReportROIStep( ChangeTrackerStep ) :
     labelVolume = slicer.mrmlScene.GetNodeByID(labelID)
 
     self.__vrDisplayNode = Helper.InitVRDisplayNode(labelVolume.GetID())
-
-    newROI = self.__vrDisplayNode.GetROINode()
-    newROI.SetDisplayVisibility(0)
 
     vrOpacityMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetScalarOpacity()
     vrColorMap = self.__vrDisplayNode.GetVolumePropertyNode().GetVolumeProperty().GetRGBTransferFunction()
